@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reset Products - TOPOLINA</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #f0f0f0;
+            margin: 0;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border: 2px solid #000;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            margin-bottom: 20px;
+        }
+
+        p {
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        button {
+            padding: 15px 30px;
+            background: #000;
+            color: #fff;
+            border: 2px solid #000;
+            font-size: 1rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 10px;
+        }
+
+        button:hover {
+            background: #333;
+        }
+
+        .success {
+            color: green;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔄 Reset Products</h1>
+        <p>This will reset all products to their default state, including the <strong>MANTEAU 3/4</strong> fix.</p>
+        <p><strong>Note:</strong> Any custom changes you made in the admin panel will be lost.</p>
+
+        <button onclick="resetProducts()">Reset Products Now</button>
+        <button onclick="window.location.href='index.html'">Go to Flipbook</button>
+
+        <div id="message"></div>
+    </div>
+
+    <script src="products-data.js"></script>
+    <script>
+        function resetProducts() {
+            if (confirm('Are you sure? This will delete all custom changes.')) {
+                // Clear localStorage
+                localStorage.removeItem('topolina_products');
+
+                // Reinitialize with defaults
+                saveProducts(DEFAULT_PRODUCTS);
+
+                // Show success message
+                document.getElementById('message').innerHTML =
+                    '<p class="success">✅ Products reset successfully!<br><br>' +
+                    'MANTEAU 3/4 patterns are now fixed.<br><br>' +
+                    'Click "Go to Flipbook" to see the changes.</p>';
+            }
+        }
+    </script>
+</body>
+
+</html>

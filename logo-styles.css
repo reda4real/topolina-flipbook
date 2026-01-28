@@ -1,0 +1,16 @@
+/* Admin Logo Styles */
+.admin-logo-container {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.admin-logo {
+    max-width: 140px;
+    height: auto;
+}
+
+.admin-logo-container h1 {
+    margin: 0;
+    font-size: 1.5rem;
+}

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOPOLINA Admin - Order Management</title>
+    <link rel="stylesheet" href="admin.css">
+    <link rel="stylesheet" href="logo-styles.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Roboto:wght@300;400;500&display=swap');
+    </style>
+</head>
+
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-container">
+        <div class="login-box">
+            <h1>TOPOLINA</h1>
+            <h2>Admin Panel</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn-primary">Login</button>
+                <p id="loginError" class="error-message"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="adminDashboard" class="dashboard-container" style="display: none;">
+        <header class="dashboard-header">
+            <div class="header-content">
+                <div class="admin-logo-container">
+                    <img src="images/logos/logo-topolina-light-280x89.png" alt="TOPOLINA" class="admin-logo">
+                    <h1>Admin Panel</h1>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <a href="index.html" class="btn-secondary" style="text-decoration: none; display: inline-block;">←
+                        Back to Flipbook</a>
+                    <button id="logoutBtn" class="btn-secondary">Logout</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Tab Navigation -->
+        <div class="tab-navigation">
+            <button class="tab-btn active" data-tab="orders">📦 Order Management</button>
+            <button class="tab-btn" data-tab="products">🎨 Product Management</button>
+            <button class="tab-btn" data-tab="images">🖼️ Image Management</button>
+        </div>
+
+        <!-- Orders Tab -->
+        <main id="ordersTab" class="dashboard-main tab-content active">
+            <div class="controls-bar">
+                <div class="filter-group">
+                    <button class="filter-btn active" data-filter="all">All Orders</button>
+                    <button class="filter-btn" data-filter="pending">Pending</button>
+                    <button class="filter-btn" data-filter="confirmed">Confirmed</button>
+                </div>
+                <div class="stats">
+                    <span class="stat-item">Total: <strong id="totalOrders">0</strong></span>
+                    <span class="stat-item">Pending: <strong id="pendingOrders">0</strong></span>
+                    <span class="stat-item">Confirmed: <strong id="confirmedOrders">0</strong></span>
+                </div>
+            </div>
+
+            <div class="orders-container">
+                <div id="ordersTable">
+                    <p class="no-orders">No orders yet</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- Products Tab -->
+        <main id="productsTab" class="dashboard-main tab-content" style="display: none;">
+            <div class="controls-bar">
+                <div class="filter-group">
+                    <select id="productSelector" class="product-selector">
+                        <option value="">Select a product to manage...</option>
+                    </select>
+                </div>
+                <div class="stats">
+                    <button id="resetProductsBtn" class="btn-danger">Reset to Defaults</button>
+                </div>
+            </div>
+
+            <div id="productEditor" class="product-editor">
+                <p class="no-orders">Select a product to start editing</p>
+            </div>
+        </main>
+
+        <!-- Images Tab -->
+        <main id="imagesTab" class="dashboard-main tab-content" style="display: none;">
+            <div class="controls-bar">
+                <div class="filter-group">
+                    <select id="imageProductSelector" class="product-selector">
+                        <option value="">Select a product to manage images...</option>
+                    </select>
+                </div>
+                <div class="stats">
+                    <button id="saveImagesBtn" class="btn-success" style="display: none;">💾 Save Image Changes</button>
+                </div>
+            </div>
+
+            <div id="imageEditor" class="product-editor">
+                <p class="no-orders">Select a product to manage images</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <h3>Confirm Action</h3>
+            <p id="modalMessage"></p>
+            <div class="modal-actions">
+                <button id="modalConfirm" class="btn-primary">Confirm</button>
+                <button id="modalCancel" class="btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Details Modal -->
+    <div id="orderDetailsModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3>Order Details</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div id="orderDetailsContent"></div>
+        </div>
+    </div>
+
+    <script src="products-data.js"></script>
+    <script src="image-management.js"></script>
+    <script src="admin.js"></script>
+</body>
+
+</html>

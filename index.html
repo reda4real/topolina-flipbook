@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOPOLINA Collection</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Roboto:wght@300;400;500&display=swap');
+    </style>
+</head>
+
+<body>
+
+    <div class="book-container">
+        <div id="book">
+
+            <div class="page cover-page">
+                <div class="page-content no-padding">
+                    <img src="images/cover.jpg" class="full-page-img">
+                </div>
+            </div>
+
+
+
+            <div class="page" id="page-summary">
+                <div class="page-content">
+                    <div class="header-section">
+                        <h2>ORDER SUMMARY</h2>
+                        <p>Review your selection</p>
+                    </div>
+                    <div id="summary-list">
+                        <p style="color: #ccc; text-align: center; margin-top: 80px;">No items selected</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page" id="page-order-form">
+                <div class="page-content">
+                    <div class="header-section">
+                        <h2>PLACE ORDER</h2>
+                        <p>Business & Shipping Information</p>
+                    </div>
+                    <form class="order-form">
+                        <!-- Business Information -->
+                        <div class="form-section-title" data-i18n="form.businessInfo">BUSINESS INFORMATION</div>
+
+                        <label data-i18n="form.companyName">COMPANY NAME *</label>
+                        <input type="text" id="company" required>
+
+                        <label data-i18n="form.contactPerson">CONTACT PERSON *</label>
+                        <input type="text" id="name" required>
+
+                        <label data-i18n="form.taxId">TAX ID / VAT NUMBER</label>
+                        <input type="text" id="taxId">
+
+                        <label data-i18n="form.email">EMAIL *</label>
+                        <input type="email" id="email" required>
+
+                        <label data-i18n="form.phone">PHONE *</label>
+                        <input type="tel" id="phone" required>
+
+                        <!-- Shipping Address -->
+                        <div class="form-section-title" data-i18n="form.shippingAddress">SHIPPING ADDRESS</div>
+
+                        <label data-i18n="form.streetAddress">STREET ADDRESS *</label>
+                        <input type="text" id="streetAddress" required>
+
+                        <label data-i18n="form.city">CITY *</label>
+                        <input type="text" id="city" required>
+
+                        <div class="form-row">
+                            <div class="form-col">
+                                <label data-i18n="form.state">STATE / PROVINCE</label>
+                                <input type="text" id="state">
+                            </div>
+                            <div class="form-col">
+                                <label data-i18n="form.postalCode">POSTAL CODE *</label>
+                                <input type="text" id="postalCode" required>
+                            </div>
+                        </div>
+
+                        <label data-i18n="form.country">COUNTRY *</label>
+                        <input type="text" id="country" required>
+
+                        <label data-i18n="form.notes">ADDITIONAL NOTES / SPECIAL INSTRUCTIONS</label>
+                        <textarea id="notes" rows="3"></textarea>
+
+                        <button type="button" class="submit-btn" onclick="sendOrder()" data-i18n="form.submit">SUBMIT
+                            ORDER</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="page">
+                <div class="page-content">
+                    <div class="header-section">
+                        <h2>TERMS & CONDITIONS</h2>
+                    </div>
+                    <div class="tcs-content">
+                        <strong>1. Purpose</strong>
+                        These Terms and Conditions of Sale govern all sales of textile products made by Topolina (“the
+                        Seller”) to any professional buyer (“the Client”) at the New York trade show or for any order
+                        confirmed during this event.
+                        <strong>2. Orders</strong>
+                        All orders must be submitted in writing (signed order form or electronic validation). The Seller
+                        reserves the right to refuse or modify an order until it has been accepted and the required
+                        deposit has been received.
+                        <strong>3. Payment Terms</strong>
+                        A 50% deposit of the total order amount is required to validate and confirm the order. No
+                        production begins until received. The remaining 50% must be paid before the goods leave the
+                        Seller’s facility. Payments by bank transfer unless otherwise agreed.
+                        <strong>4. Prices</strong>
+                        Prices may be stated in USD or EUR. Prices exclude transport, customs fees, import taxes,
+                        insurance, and related charges.
+                        <strong>5. Shipping, Delivery & Transfer of Risk</strong>
+                        All transportation, insurance, customs, and import fees are the responsibility of the Client.
+                        Goods are sold EXW – Ex Works (Seller’s workshop in Morocco). Risk transfers once goods are made
+                        available at the Seller’s premises.
+                        <strong>6. Claims & Inspection</strong>
+                        The Client must inspect goods upon receipt. Any claim must be submitted in writing within 48
+                        hours. After that period, goods are deemed accepted.
+                        <strong>7. Returns & Exchanges</strong>
+                        No returns or exchanges for goods produced on order unless expressly approved in writing.
+                        <strong>8. Intellectual Property</strong>
+                        All designs, images, logos, and creations remain exclusive property of the Seller.
+                        <strong>9. Retention of Title</strong>
+                        Goods remain the Seller’s property until full payment is received.
+                        <strong>10. Force Majeure</strong>
+                        The Seller is not liable for delays caused by events beyond its control.
+                        <strong>11. Governing Law</strong>
+                        These Terms are governed by Moroccan law. Disputes fall under the exclusive jurisdiction of the
+                        courts of Marrakech.
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- NAVIGATION SIDEBAR -->
+    <div id="nav-sidebar">
+        <button id="nav-toggle" aria-label="Toggle Navigation">☰</button>
+        <div class="nav-menu">
+            <div class="nav-logo">
+                <img src="images/logos/logo-topolina-light-280x89.png" alt="TOPOLINA" class="logo-img">
+            </div>
+            <h3 data-i18n="nav.jumpTo">JUMP TO</h3>
+            <ul>
+                <li onclick="flipToPage(1)" data-i18n="nav.cover">Cover</li>
+                <li class="highlight" onclick="navigateToPageId('page-summary')" data-i18n="nav.orderSummary">Order
+                    Summary</li>
+                <li class="highlight" onclick="navigateToPageId('page-order-form')" data-i18n="nav.placeOrder">Place
+                    Order</li>
+
+                <li style="margin-top: 15px; font-weight: bold; color: #fff; cursor: default;">PRODUCTS</li>
+                <li onclick="flipToPage(5)" data-i18n="nav.chemise">Shirt</li>
+                <li onclick="flipToPage(10)" data-i18n="nav.pontalon">Pants</li>
+                <li onclick="flipToPage(15)" data-i18n="nav.chemiseSansManche">Sleeveless Shirt</li>
+                <li onclick="flipToPage(20)" data-i18n="nav.jupe">Skirt</li>
+                <li onclick="flipToPage(25)" data-i18n="nav.manteauDroit">Straight Coat</li>
+                <li onclick="flipToPage(28)" data-i18n="nav.robeEsabel">Isabelle Dress</li>
+                <li onclick="flipToPage(31)" data-i18n="nav.topEsabel">Isabelle Top</li>
+                <li onclick="flipToPage(34)" data-i18n="nav.manteau34">3/4 Coat</li>
+                <li onclick="flipToPage(38)" data-i18n="nav.manteauLong">Long Coat</li>
+                <li onclick="flipToPage(43)" data-i18n="nav.vest">Vest</li>
+                <li onclick="flipToPage(48)" data-i18n="nav.robeLong">Long Dress</li>
+
+                <li class="admin-link"><a href="/admin" data-i18n="admin.panel">🔐 Admin Panel</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.js"></script>
+    <script src="products-data.js"></script>
+    <script src="translations.js"></script>
+    <script src="dynamic-pages.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>

@@ -69,6 +69,7 @@ const translations = {
         'msg.fillRequired': 'Please fill in Name, Email, and Phone.',
         'msg.selectFabric': 'Please select at least one fabric.',
         'msg.orderSuccess': 'Order submitted successfully! You can view it in the admin panel.',
+        'msg.outOfStock': 'Some items could not be ordered due to insufficient stock:',
 
         // Admin
         'admin.panel': 'Admin Panel'
@@ -142,6 +143,7 @@ const translations = {
         'msg.fillRequired': 'Veuillez remplir le nom, l\'email et le téléphone.',
         'msg.selectFabric': 'Veuillez sélectionner au moins un tissu.',
         'msg.orderSuccess': 'Commande soumise avec succès! Vous pouvez la voir dans le panneau d\'administration.',
+        'msg.outOfStock': 'Certains articles n\'ont pas pu être commandés en raison d\'un stock insuffisant :',
 
         // Admin
         'admin.panel': 'Panneau d\'Administration'

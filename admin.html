@@ -50,6 +50,7 @@
             <button class="tab-btn active" data-tab="orders">📦 Order Management</button>
             <button class="tab-btn" data-tab="products">🎨 Product Management</button>
             <button class="tab-btn" data-tab="images">🖼️ Image Management</button>
+            <button class="tab-btn" data-tab="inventory">📏 Inventory Control</button>
         </div>
 
         <!-- Orders Tab -->
@@ -107,6 +108,30 @@
 
             <div id="imageEditor" class="product-editor">
                 <p class="no-orders">Select a product to manage images</p>
+            </div>
+        </main>
+
+        <!-- Inventory Tab -->
+        <main id="inventoryTab" class="dashboard-main tab-content" style="display: none;">
+            <div class="controls-bar">
+                <div class="filter-group">
+                    <select id="inventoryProductSelector" class="product-selector">
+                        <option value="">Select a product to manage inventory...</option>
+                    </select>
+                </div>
+                <div class="stats">
+                    <button id="saveInventoryBtn" class="btn-success" style="display: none;">💾 Save Inventory</button>
+                </div>
+            </div>
+
+            <div class="inventory-info-box"
+                style="background: #eef; padding: 15px; margin-bottom: 20px; border: 1px solid #ccd;">
+                <strong>ℹ️ Note:</strong> Some products (Vest, 3/4 Coat, Long Coat, Straight Coat) may consume multiple
+                patterns. Ensure you update inventory for all relevant patterns.
+            </div>
+
+            <div id="inventoryEditor" class="product-editor">
+                <p class="no-orders">Select a product to manage inventory</p>
             </div>
         </main>
     </div>

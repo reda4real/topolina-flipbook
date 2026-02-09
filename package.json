@@ -4,7 +4,8 @@
   "main": "admin.js",
   "scripts": {
     "start": "node server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "push": "git add . && git commit -m \"update\" && git push"
   },
   "keywords": [],
   "author": "",

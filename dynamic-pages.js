@@ -123,17 +123,66 @@ function createPatternHTML(productKey, pattern) {
     const cartKey = `${productKey} - ${pattern.id}`;
     const borderStyle = pattern.id === 'WHITE' ? 'style="border:1px solid #ddd;"' : '';
 
+    // --- STOCK CHECK LOGIC ---
+    const products = getProducts();
+    const product = products[productKey];
+    let isOutOfStock = false;
+    let stockMessage = '';
+
+    if (product) {
+        const stockType = pattern.stockType || 'meters';
+
+        if (stockType === 'quantity') {
+            // If tracking units (e.g. ready stock), unavailable if 0 or less
+            const qty = pattern.availableQuantity !== undefined ? pattern.availableQuantity : 0;
+            if (qty <= 0) {
+                isOutOfStock = true;
+                stockMessage = 'OUT OF STOCK';
+            }
+        } else {
+            // If tracking meters
+            const meters = pattern.availableMeters !== undefined ? pattern.availableMeters : 0;
+            let required = 0;
+
+            // Calculate required meters based on consumption
+            if (product.consumption) {
+                if (product.consumption.entire) {
+                    required = product.consumption.entire;
+                } else if (product.consumption.outside) {
+                    // Assumption: The pattern selected is for the OUTER shell
+                    required = product.consumption.outside;
+                }
+            }
+
+            // If we don't know consumption, we assume it's available usually, 
+            // but let's be safe: if meters is 0, it's out.
+            // If required is known, strict check.
+            if (meters <= 0 || (required > 0 && meters < required)) {
+                isOutOfStock = true;
+                // stockMessage = 'INSUFFICIENT FABRIC'; 
+                stockMessage = 'OUT OF STOCK'; // Keep it simple for client
+            }
+        }
+    }
+
+    const disabledAttr = isOutOfStock ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : '';
+    const opacityStyle = isOutOfStock ? 'opacity: 0.6;' : '';
+    const overlay = isOutOfStock ?
+        `<div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.7); display: flex; align-items: center; justify-content: center; font-weight: bold; color: #d32f2f; font-size: 0.9rem; text-align: center; border: 1px solid #d32f2f;">${stockMessage}</div>`
+        : '';
+
     return `
-        <div class="fabric-item" data-cart-key="${cartKey}">
-            <img src="${pattern.image}" class="swatch-img" ${borderStyle} alt="${pattern.name}">
-            <div class="fabric-name">${pattern.name}</div>
-            <div class="qty-selector">
-                <button class="qty-btn" onclick="updateQty(this, '${cartKey}', -1)">-</button>
-                <span class="qty-val">0</span>
-                <button class="qty-btn" onclick="updateQty(this, '${cartKey}', 1)">+</button>
+            <div class="fabric-item" data-cart-key="${cartKey}" style="position: relative; ${opacityStyle}">
+                ${overlay}
+                <img src="${pattern.image}" class="swatch-img" ${borderStyle} alt="${pattern.name}">
+                <div class="fabric-name" style="display: none;">${pattern.name}</div>
+                <div class="qty-selector">
+                    <button class="qty-btn" onclick="updateQty(this, '${cartKey}', -1)" ${disabledAttr}>-</button>
+                    <span class="qty-val">0</span>
+                    <button class="qty-btn" onclick="updateQty(this, '${cartKey}', 1)" ${disabledAttr}>+</button>
+                </div>
             </div>
-        </div>
-    `;
+        `;
 }
 
 function createShopPage(productKey) {

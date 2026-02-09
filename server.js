@@ -245,6 +245,7 @@ const seedProducts = async () => {
         const DEFAULT_PRODUCTS = {
             "CHEMISE": {
                 displayName: "CHEMISE",
+                consumption: { entire: 2.20 },
                 coverImage: "images/chemise/cover.jpg",
                 sketchImage: "images/chemise/CHEMISE_SKETCH.png",
                 patterns: [
@@ -272,6 +273,7 @@ const seedProducts = async () => {
             },
             "PONTALON": {
                 displayName: "PONTALON",
+                consumption: { entire: 2.25 },
                 coverImage: "images/pontalon/cover.jpg",
                 sketchImage: "images/pontalon/PONTALON_SKETCH.png",
                 patterns: [
@@ -289,6 +291,7 @@ const seedProducts = async () => {
             },
             "SANT MANCH": {
                 displayName: "CHEMISE SANS MANCHE",
+                consumption: { entire: 1.35 },
                 coverImage: "images/santmanch/cover.jpg",
                 sketchImage: "images/santmanch/CHEMISE_SANS_MANCHE_SKETCH.png",
                 patterns: [
@@ -306,6 +309,7 @@ const seedProducts = async () => {
             },
             "JUPE": {
                 displayName: "JUPE",
+                consumption: { entire: 2.30 },
                 coverImage: "images/jupe/cover.jpg",
                 sketchImage: "images/jupe/JUPE_SKETCH.png",
                 patterns: [
@@ -320,6 +324,7 @@ const seedProducts = async () => {
             },
             "MANTEAU DROIT": {
                 displayName: "MANTEAU DROIT",
+                consumption: { outside: 3.70, inside: 2.50 },
                 coverImage: "images/manteaudroit/cover.jpg",
                 sketchImage: "images/manteaudroit/MANTEAU_DROIT_SKETCH.png",
                 patterns: [
@@ -329,6 +334,7 @@ const seedProducts = async () => {
             },
             "ROBE ESABEL": {
                 displayName: "ROBE ESABEL",
+                consumption: { entire: 3.10 },
                 coverImage: "images/robeesabel/cover.jpg",
                 sketchImage: "images/robeesabel/ROBE_ESABEL_SKETCH.png",
                 patterns: [
@@ -338,6 +344,7 @@ const seedProducts = async () => {
             },
             "TOP ESABEL": {
                 displayName: "TOP ESABEL",
+                consumption: { entire: 2.20 },
                 coverImage: "images/topesabel/cover.jpg",
                 sketchImage: "images/topesabel/TOP_ESABEL_SKETCH.png",
                 patterns: [
@@ -347,6 +354,7 @@ const seedProducts = async () => {
             },
             "MANTEAU 3/4": {
                 displayName: "MANTEAU 3/4",
+                consumption: { outside: 4.00, inside: 2.50 },
                 coverImage: "images/manteautrois/cover.jpg",
                 sketchImage: "images/manteautrois/MANTEAU_3_4_SKETCH.png",
                 patterns: [
@@ -357,6 +365,7 @@ const seedProducts = async () => {
             },
             "MANTEAU LONG": {
                 displayName: "MANTEAU LONG",
+                consumption: { outside: 4.00, inside: 2.60 },
                 coverImage: "images/manteaulong/cover.jpg",
                 sketchImage: "images/manteaulong/MANTEAU_LONG_SKETCH.png",
                 patterns: [
@@ -369,6 +378,7 @@ const seedProducts = async () => {
             },
             "VEST": {
                 displayName: "VEST",
+                consumption: { outside: 2.10, inside: 1.50 },
                 coverImage: "images/vest/cover.jpg",
                 sketchImage: "images/vest/VEST_SKETCH.png",
                 patterns: [
@@ -386,6 +396,7 @@ const seedProducts = async () => {
             },
             "ROBE LONG": {
                 displayName: "ROBE LONG",
+                consumption: { entire: 3.80 },
                 coverImage: "images/robelong/cover.jpg",
                 sketchImage: "images/robelong/ROBE_LONG_SKETCH.png",
                 patterns: [

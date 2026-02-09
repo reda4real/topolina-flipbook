@@ -142,46 +142,66 @@ function getShopImageSection(productKey) {
     `;
 }
 
+// Helper to upload image
+async function uploadImage(file) {
+    const formData = new FormData();
+    formData.append('image', file);
+    const token = localStorage.getItem('topolina_admin_session');
+
+    try {
+        const response = await fetch('/api/upload', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData
+        });
+        const data = await response.json();
+        if (data.success) return data.filepath;
+        alert('Upload failed: ' + (data.error || 'Unknown error'));
+        return null;
+    } catch (e) {
+        console.error(e);
+        alert('Upload failed');
+        return null;
+    }
+}
+
 // Handle cover image upload
-window.handleCoverImageUpload = function (input) {
+window.handleCoverImageUpload = async function (input) {
     const file = input.files[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = function (e) {
-        currentImageProduct.data.coverImage = e.target.result;
+    const filepath = await uploadImage(file);
+    if (filepath) {
+        currentImageProduct.data.coverImage = filepath;
         document.getElementById('coverImagePreview').innerHTML =
-            `<img src="${e.target.result}" alt="Cover Image">`;
-    };
-    reader.readAsDataURL(file);
+            `<img src="${filepath}" alt="Cover Image">`;
+    }
 };
 
 // Handle sketch image upload
-window.handleSketchImageUpload = function (input) {
+window.handleSketchImageUpload = async function (input) {
     const file = input.files[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = function (e) {
-        currentImageProduct.data.sketchImage = e.target.result;
+    const filepath = await uploadImage(file);
+    if (filepath) {
+        currentImageProduct.data.sketchImage = filepath;
         document.getElementById('sketchImagePreview').innerHTML =
-            `<img src="${e.target.result}" alt="Sketch Image">`;
-    };
-    reader.readAsDataURL(file);
+            `<img src="${filepath}" alt="Sketch Image">`;
+    }
 };
 
 // Handle shop image upload
-window.handleShopImageUpload = function (input) {
+window.handleShopImageUpload = async function (input) {
     const file = input.files[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = function (e) {
-        currentImageProduct.data.shopImage = e.target.result;
+    const filepath = await uploadImage(file);
+    if (filepath) {
+        currentImageProduct.data.shopImage = filepath;
         document.getElementById('shopImagePreview').innerHTML =
-            `<img src="${e.target.result}" alt="Shop Image">`;
-    };
-    reader.readAsDataURL(file);
+            `<img src="${filepath}" alt="Shop Image">`;
+    }
 };
 
 // Save image changes

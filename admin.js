@@ -1,5 +1,5 @@
 // Admin Configuration
-const ADMIN_PASSWORD = 'topolina2024'; // Change this to your desired password
+const ADMIN_PASSWORD = null; // Security fix: Password removed from client-side; validation is server-side
 const SESSION_KEY = 'topolina_admin_session';
 const ORDERS_KEY = 'topolina_orders';
 
@@ -27,12 +27,16 @@ const resetProductsBtn = document.getElementById('resetProductsBtn');
 const imageProductSelector = document.getElementById('imageProductSelector');
 const imageEditor = document.getElementById('imageEditor');
 const saveImagesBtn = document.getElementById('saveImagesBtn');
+const inventoryProductSelector = document.getElementById('inventoryProductSelector');
+const inventoryEditor = document.getElementById('inventoryEditor');
+const saveInventoryBtn = document.getElementById('saveInventoryBtn');
 
 // State
 let currentFilter = 'all';
 let pendingAction = null;
 let currentProduct = null;
 let currentImageProduct = null;
+let currentInventoryProduct = null;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
@@ -80,7 +84,9 @@ function showDashboard() {
     loginScreen.style.display = 'none';
     adminDashboard.style.display = 'block';
     loadOrders();
+    loadOrders();
     initializeImageProductSelector();
+    initializeInventoryProductSelector();
 }
 
 function showLogin() {
@@ -182,6 +188,23 @@ function setupEventListeners() {
     if (saveImagesBtn) {
         saveImagesBtn.addEventListener('click', saveImageChanges);
     }
+
+    // Inventory Management
+    if (inventoryProductSelector) {
+        inventoryProductSelector.addEventListener('change', (e) => {
+            const productKey = e.target.value;
+            if (productKey) {
+                loadInventoryEditor(productKey);
+            } else {
+                inventoryEditor.innerHTML = '<p class="no-orders">Select a product to manage inventory</p>';
+                saveInventoryBtn.style.display = 'none';
+            }
+        });
+    }
+
+    if (saveInventoryBtn) {
+        saveInventoryBtn.addEventListener('click', saveInventory);
+    }
 }
 
 // Tab Switching
@@ -204,6 +227,12 @@ function switchTab(tabName) {
     if (activeTab) {
         activeTab.classList.add('active');
         activeTab.style.display = 'block';
+    }
+
+    if (tabName === 'images') {
+        initializeImageProductSelector();
+    } else if (tabName === 'inventory') {
+        initializeInventoryProductSelector();
     }
 }
 
@@ -279,7 +308,7 @@ function createOrderCard(order) {
         <div class="order-card" data-order-id="${order.id}">
             <div class="order-header">
                 <div class="order-info">
-                    <h3>${order.name}</h3>
+                    <h3>${order.contactPerson || order.name}</h3>
                     <p class="order-meta">📧 ${order.email}</p>
                     ${order.company ? `<p class="order-meta">🏢 ${order.company}</p>` : ''}
                     ${order.phone ? `<p class="order-meta">📱 ${order.phone}</p>` : ''}
@@ -320,7 +349,10 @@ async function handleOrderAction(action, orderId) {
     if (action === 'view') {
         // Need to find the order object. Since we don't have it in memory easily without re-fetching or storing globally,
         // let's just fetch all again or optimize. For now, fetching all is fine for admin panel scale.
-        const response = await fetch('/api/orders');
+        const token = localStorage.getItem(SESSION_KEY);
+        const response = await fetch('/api/orders', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
         const orders = await response.json();
         const order = orders.find(o => o.id === orderId);
         if (order) showOrderDetails(order);
@@ -390,19 +422,25 @@ function showOrderDetails(order) {
         <div class="order-details-full">
             <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px;">
                 <div>
-                    <h2 style="color: #000000; margin-bottom: 10px;">${order.name}</h2>
+                    <h2 style="color: #000000; margin-bottom: 10px;">${order.contactPerson || order.name}</h2>
                     <p style="color: #333333; margin-bottom: 5px;">📧 ${order.email}</p>
                     ${order.company ? `<p style="color: #333333; margin-bottom: 5px;">🏢 ${order.company}</p>` : ''}
+                    ${order.taxId ? `<p style="color: #333333; margin-bottom: 5px;">🆔 Tax ID: ${order.taxId}</p>` : ''}
                     ${order.phone ? `<p style="color: #333333; margin-bottom: 5px;">📱 ${order.phone}</p>` : ''}
                     <p style="color: #666666; font-size: 0.9rem;">🕒 ${date}</p>
                 </div>
                 <span class="order-status ${statusClass}">${statusText}</span>
             </div>
             
-            ${order.address ? `
+            ${(order.address || order.streetAddress) ? `
                 <div style="margin-bottom: 20px; padding: 15px; background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 0;">
                     <h4 style="color: #333333; margin-bottom: 10px;">📍 Delivery Address</h4>
-                    <p style="color: #000000; white-space: pre-line;">${order.address}</p>
+                    <p style="color: #000000; white-space: pre-line;">
+                        ${order.address ||
+            `${order.streetAddress}
+                        ${order.city}, ${order.state || ''} ${order.postalCode}
+                        ${order.country}`}
+                    </p>
                 </div>
             ` : ''}
             
@@ -411,6 +449,7 @@ function showOrderDetails(order) {
                 <div style="display: grid; gap: 15px;">
                     ${order.items.map(item => `
                         <div style="padding: 15px; background: #f9f9f9; border: 2px solid #000000; border-radius: 0; display: flex; align-items: center; gap: 15px;">
+                            ${item.image ? `<img src="${item.image}" alt="${item.product}" style="width: 60px; height: 60px; object-fit: cover; border: 1px solid #ddd;">` : ''}
                             <div style="flex: 1;">
                                 <div style="color: #000000; font-weight: 500; margin-bottom: 5px;">${item.product}</div>
                                 <div style="color: #666666; font-size: 0.9rem;">Quantity: <strong style="color: #000000;">${item.quantity}</strong></div>
@@ -623,6 +662,161 @@ window.saveProduct = async function () {
 
         // Reload the product editor to show updated data
         loadProductEditor(currentProduct.key);
+    }
+};
+
+
+// ========== INVENTORY MANAGEMENT ==========
+function initializeInventoryProductSelector() {
+    const products = getProducts();
+    if (!inventoryProductSelector) return;
+
+    inventoryProductSelector.innerHTML = '<option value="">Select a product to manage inventory...</option>';
+
+    Object.keys(products).forEach(key => {
+        const option = document.createElement('option');
+        option.value = key;
+        option.textContent = products[key].displayName;
+        inventoryProductSelector.appendChild(option);
+    });
+}
+
+function loadInventoryEditor(productKey) {
+    const products = getProducts();
+    const product = products[productKey];
+
+    if (!product) {
+        inventoryEditor.innerHTML = '<p class="no-orders">Product not found</p>';
+        saveInventoryBtn.style.display = 'none';
+        return;
+    }
+
+    currentInventoryProduct = { key: productKey, data: JSON.parse(JSON.stringify(product)) };
+    saveInventoryBtn.style.display = 'block';
+    renderInventoryEditor();
+}
+
+function renderInventoryEditor() {
+    const { key, data } = currentInventoryProduct;
+
+    let consumptionInfo = '';
+    if (data.consumption) {
+        if (data.consumption.entire) {
+            consumptionInfo = `<div style="background: #e8f5e9; padding: 10px; margin-bottom: 20px; border: 1px solid #c8e6c9; border-radius: 0;">
+                <strong style="display:block; margin-bottom:5px;">📏 Fabric Consumption:</strong> 
+                <span style="font-size: 1.1em;">${data.consumption.entire.toFixed(2)} meters</span> per unit
+            </div>`;
+        } else {
+            consumptionInfo = `<div style="background: #e8f5e9; padding: 10px; margin-bottom: 20px; border: 1px solid #c8e6c9; border-radius: 0;">
+                <strong style="display:block; margin-bottom:5px;">📏 Fabric Consumption:</strong>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div>Outer: <strong>${data.consumption.outside.toFixed(2)} m</strong></div>
+                    <div>Inner: <strong>${data.consumption.inside.toFixed(2)} m</strong></div>
+                </div>
+            </div>`;
+        }
+    } else {
+        consumptionInfo = `<div style="background: #fff3e0; padding: 10px; margin-bottom: 20px; border: 1px solid #ffcc80; border-radius: 0;">
+            <strong>⚠️ No consumption data available</strong> for this product.
+        </div>`;
+    }
+
+    inventoryEditor.innerHTML = `
+        <div class="product-header">
+            <h2>${data.displayName}</h2>
+            <p>Set available meters for each pattern.</p>
+        </div>
+        
+        ${consumptionInfo}
+
+        <div class="patterns-grid">
+            ${data.patterns.map((pattern, index) => renderInventoryCard(pattern, index)).join('')}
+        </div>
+    `;
+}
+
+function renderInventoryCard(pattern, index) {
+    // Determine active type (default to meters)
+    const stockType = pattern.stockType || 'meters'; // 'meters' | 'quantity'
+    const isMeters = stockType === 'meters';
+
+    // Get values (default to 0 if undefined)
+    const meters = pattern.availableMeters !== undefined ? pattern.availableMeters : 0;
+    const quantity = pattern.availableQuantity !== undefined ? pattern.availableQuantity : 0;
+
+    return `
+        <div class="pattern-card">
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <div style="width: 80px; height: 80px; background: #eee; border: 1px solid #ddd;">
+                     ${pattern.image ? `<img src="${pattern.image}" style="width: 100%; height: 100%; object-fit: cover;">` : ''}
+                </div>
+                <div style="flex: 1;">
+                    <h4 style="margin-bottom: 5px;">${pattern.name}</h4>
+                    <small style="color: #666; display: block; margin-bottom: 5px;">ID: ${pattern.id}</small>
+                </div>
+            </div>
+            
+            <div style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;">
+                <div style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                    <label style="font-size: 0.85rem; color: #666; font-weight: 500;">Tracking Mode:</label>
+                    <select onchange="updateInventoryType(${index}, this.value)" style="padding: 4px; border: 1px solid #ccc; font-size: 0.85rem;">
+                        <option value="meters" ${isMeters ? 'selected' : ''}>📏 Fabric (Meters)</option>
+                        <option value="quantity" ${!isMeters ? 'selected' : ''}>📦 Ready Stock (Units)</option>
+                    </select>
+                </div>
+
+                ${isMeters ? `
+                    <div>
+                        <label style="display: block; font-size: 0.9rem; font-weight: bold; margin-bottom: 5px; color: #2e7d32;">
+                            Available Fabric (m)
+                        </label>
+                        <input type="number" 
+                               value="${meters}" 
+                               min="0" 
+                               step="0.1" 
+                               style="width: 100%; font-size: 1.1rem; padding: 8px; border: 2px solid #2e7d32;"
+                               onchange="updateInventoryValue(${index}, 'availableMeters', this.value)">
+                    </div>
+                ` : `
+                    <div>
+                         <label style="display: block; font-size: 0.9rem; font-weight: bold; margin-bottom: 5px; color: #1565c0;">
+                            Ready Stock (Units)
+                         </label>
+                         <input type="number" 
+                                value="${quantity}" 
+                                min="0" 
+                                step="1" 
+                                style="width: 100%; font-size: 1.1rem; padding: 8px; border: 2px solid #1565c0;"
+                                onchange="updateInventoryValue(${index}, 'availableQuantity', this.value)">
+                    </div>
+                `}
+            </div>
+        </div>
+    `;
+}
+
+window.updateInventoryType = function (index, type) {
+    if (currentInventoryProduct && currentInventoryProduct.data.patterns[index]) {
+        currentInventoryProduct.data.patterns[index].stockType = type;
+        renderInventoryEditor(); // Re-render to show correct input
+    }
+};
+
+window.updateInventoryValue = function (index, field, value) {
+    if (currentInventoryProduct && currentInventoryProduct.data.patterns[index]) {
+        currentInventoryProduct.data.patterns[index][field] = parseFloat(value) || 0;
+    }
+};
+
+window.saveInventory = async function () {
+    if (!currentInventoryProduct) return;
+
+    const products = getProducts();
+    products[currentInventoryProduct.key] = currentInventoryProduct.data;
+
+    // Use existing saveProducts function
+    if (await saveProducts(products)) {
+        alert('✅ Inventory saved successfully!');
     }
 };
 

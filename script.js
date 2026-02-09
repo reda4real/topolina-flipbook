@@ -128,6 +128,12 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     // --- 3. SHOPPING CART LOGIC ---
     let cart = {};
+    try {
+        const saved = localStorage.getItem('topolina_cart');
+        if (saved) cart = JSON.parse(saved);
+        // Sync visually after restoring, wait for simple macro task to ensure DOM ready if needed
+        setTimeout(syncAllVisuals, 0);
+    } catch (e) { console.error('Cart load error', e); }
 
     window.updateQty = function (btn, fabricName, change) {
         let imgUrl = "";
@@ -159,6 +165,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         cart[fabricName].img = imgUrl;
 
         // 5. Update the screen
+        localStorage.setItem('topolina_cart', JSON.stringify(cart));
         syncAllVisuals();
     };
 
@@ -275,7 +282,8 @@ document.addEventListener('DOMContentLoaded', async function () {
             if (data.qty > 0) {
                 orderItems.push({
                     product: fabric,
-                    quantity: data.qty
+                    quantity: data.qty,
+                    image: data.img
                 });
             }
         }
@@ -285,7 +293,62 @@ document.addEventListener('DOMContentLoaded', async function () {
             return;
         }
 
+        // Check Stock Availability
+        const products = getProducts();
+        let insufficientStockItems = [];
+
+        for (let [fabric, data] of Object.entries(cart)) {
+            if (data.qty > 0) {
+                // Parse "PRODUCT - PATTERN" key
+                const parts = fabric.split(' - ');
+                if (parts.length < 2) continue;
+
+                const productKey = parts[0];
+                const patternId = parts[1]; // Wait, pattern NAME is usually used here?
+                // Let's check how cart keys are constructed: `${productKey} - ${pattern.id}` (from createPatternHTML)
+                // BUT wait, in createPatternHTML we use pattern.id now. previously it might have been pattern.name?
+                // `const cartKey = `${productKey} - ${pattern.id}`;` -> Correct.
+
+                const product = products[productKey];
+                if (product) {
+                    const pattern = product.patterns.find(p => p.id === patternId);
+                    if (pattern) {
+                        const stockType = pattern.stockType || 'meters';
+
+                        if (stockType === 'quantity') {
+                            const available = pattern.availableQuantity !== undefined ? pattern.availableQuantity : 0;
+                            if (data.qty > available) {
+                                insufficientStockItems.push(`${fabric} (Requested: ${data.qty}, Available: ${available})`);
+                            }
+                        } else {
+                            const availableMeters = pattern.availableMeters !== undefined ? pattern.availableMeters : 0;
+                            let consumptionPerUnit = 0;
+
+                            if (product.consumption) {
+                                if (product.consumption.entire) {
+                                    consumptionPerUnit = product.consumption.entire;
+                                } else if (product.consumption.outside) {
+                                    consumptionPerUnit = product.consumption.outside;
+                                }
+                            }
+
+                            const totalRequired = data.qty * consumptionPerUnit;
+                            if (totalRequired > availableMeters) {
+                                insufficientStockItems.push(`${fabric} (Requested: ${totalRequired.toFixed(2)}m, Available: ${availableMeters}m)`);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (insufficientStockItems.length > 0) {
+            alert(t('msg.outOfStock') + '\n\n' + insufficientStockItems.join('\n'));
+            return;
+        }
+
         // Create order object for admin panel
+
         const order = {
             id: 'ORD-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
             timestamp: Date.now(),
@@ -303,8 +366,6 @@ document.addEventListener('DOMContentLoaded', async function () {
             postalCode: postalCode,
             country: country,
             // Delivery
-            deliveryDate: deliveryDate,
-            shippingMethod: shippingMethod,
             notes: notes,
             items: orderItems
         };

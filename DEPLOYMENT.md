@@ -39,6 +39,17 @@ pm2 save
 pm2 startup
 ```
 
+## Data Migration
+The application will automatically create the database tables. However, to move your existing product data to the live server:
+1.  **Export local data**:
+    ```bash
+    mysqldump -u root -p flipbook_db > flipbook_data.sql
+    ```
+2.  **Import on server**:
+    ```bash
+    mysql -u your_db_user -p flipbook_db < flipbook_data.sql
+    ```
+
 ## Folder Structure
 - `uploads/`: Stores uploaded images. Ensure this folder has write permissions.
 - `public/`: Static assets (if separated, currently served from root).

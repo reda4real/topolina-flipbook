@@ -40,15 +40,17 @@ pm2 startup
 ```
 
 ## Data Migration
-The application will automatically create the database tables. However, to move your existing product data to the live server:
-1.  **Export local data**:
-    ```bash
-    mysqldump -u root -p flipbook_db > flipbook_data.sql
-    ```
-2.  **Import on server**:
-    ```bash
-    mysql -u your_db_user -p flipbook_db < flipbook_data.sql
-    ```
+The application will automatically create the necessary database structure (tables) when it starts. However, you need to migrate your data (products, fabrics, etc.).
+
+Since you have a local MySQL database, use your preferred database tool (e.g., Workbench, HeidiSQL, phpMyAdmin, or command line) to:
+1.  **Export** your local `flipbook_db` to a `.sql` file.
+2.  **Import** that `.sql` file into your production server's database.
+
+*Note: If `mysqldump` is available in your terminal, you can use:*
+```bash
+mysqldump -u root -p flipbook_db > flipbook_data.sql
+```
+
 
 ## Folder Structure
 - `uploads/`: Stores uploaded images. Ensure this folder has write permissions.

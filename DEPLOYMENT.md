@@ -8,10 +8,10 @@
 1.  **Unzip the package**: Extract the contents of `flipbook-deployment.zip` to your server.
     *   **IMPORTANT**: Ensure you **overwrite** all existing files, especially `server.js`.
     *   Check the console logs for `--- Topolina Server v3.5 Starting ---` to verify you are running the latest version.
-2.  **Install Dependencies**:
-    ```bash
-    npm install
-    ```
+3.  **Upload `uploads/` folder**:
+    *   The `uploads/` folder is **not** included in the zip (it contains your dynamic content).
+    *   You must **manually upload** your local `uploads` folder to the server directory.
+
 3.  **Configure Environment**:
     - Rename `.env.example` to `.env`.
     - Edit `.env` and fill in your MySQL database credentials and desired Admin Password.

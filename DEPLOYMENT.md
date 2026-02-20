@@ -6,6 +6,8 @@
 
 ## Installation Steps
 1.  **Unzip the package**: Extract the contents of `flipbook-deployment.zip` to your server.
+    *   **IMPORTANT**: Ensure you **overwrite** all existing files, especially `server.js`.
+    *   Check the console logs for `--- Topolina Server v3.5 Starting ---` to verify you are running the latest version.
 2.  **Install Dependencies**:
     ```bash
     npm install

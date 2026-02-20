@@ -1,12 +1,48 @@
+:root {
+    /* Default Dark Theme (Flipbook) */
+    --bg-body: #111;
+    --bg-sidebar-start: #1a1a1a;
+    --bg-sidebar-end: #2a2a2a;
+    --text-nav: #ccc;
+    --text-nav-hover: #fff;
+    --text-nav-highlight: #fff;
+    --bg-nav-highlight: linear-gradient(90deg, #2d2d2d 0%, #252525 100%);
+    --bg-nav-highlight-hover: linear-gradient(90deg, #3a3a3a 0%, #2d2d2d 100%);
+    --border-nav: #333;
+
+    /* Page & Content */
+    --bg-page: #fff;
+    --text-main: #000;
+    --text-muted: #555;
+    --text-body: #ccc;
+}
+
+[data-theme="light"] {
+    --bg-body: #f4f4f4;
+    --bg-sidebar-start: #ffffff;
+    --bg-sidebar-end: #e0e0e0;
+    --text-nav: #444;
+    --text-nav-hover: #000;
+    --text-nav-highlight: #000;
+    --bg-nav-highlight: linear-gradient(90deg, #e0e0e0 0%, #d0d0d0 100%);
+    --bg-nav-highlight-hover: linear-gradient(90deg, #d0d0d0 0%, #c0c0c0 100%);
+    --border-nav: #ccc;
+
+    --text-body: #333;
+    --text-muted: #666;
+}
+
 /* GENERAL & FONTS */
 body {
     margin: 0;
     padding: 0;
-    background-color: #111;
+    background-color: var(--bg-body);
+    color: var(--text-body);
     font-family: 'Roboto', sans-serif;
     height: 100vh;
     width: 100vw;
     overflow: hidden;
+    transition: background-color 0.3s ease;
 }
 
 /* CONTAINER SETUP */
@@ -35,6 +71,35 @@ h3 {
     border-right: 1px solid #ddd;
     box-shadow: inset 3px 0 10px rgba(0, 0, 0, 0.05);
     overflow: hidden;
+    overflow: hidden;
+    /* Ensure text on pages takes priority over global theme text color */
+    color: #000;
+}
+
+/* Force dark text for inputs and labels inside pages even in Dark Mode */
+.page label,
+.page input,
+.page select,
+.page textarea,
+.page h2,
+.page p,
+.form-section-title {
+    color: #000 !important;
+    border-color: #ccc;
+}
+
+.page input,
+.page textarea,
+.page select {
+    background: #fff !important;
+    color: #000 !important;
+    border: 1px solid #ccc !important;
+}
+
+.page input:focus,
+.page textarea:focus,
+.page select:focus {
+    border-color: #333 !important;
 }
 
 .page-content {
@@ -63,7 +128,7 @@ h3 {
     position: absolute;
     bottom: 10px;
     font-size: 12px;
-    color: #555;
+    color: var(--text-muted);
     font-weight: bold;
     z-index: 10;
 }
@@ -94,7 +159,7 @@ h3 {
 
 .header-section p {
     font-size: 0.6rem;
-    color: #888;
+    color: var(--text-muted);
     margin-top: 3px;
 }
 
@@ -136,7 +201,7 @@ h3 {
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 150px;
-    color: #333;
+    color: #000 !important;
 }
 
 /* QTY SELECTOR */
@@ -170,7 +235,7 @@ h3 {
     font-weight: bold;
     min-width: 20px;
     text-align: center;
-    color: #000;
+    color: var(--text-main);
 }
 
 /* --- ORDER SUMMARY --- */
@@ -240,7 +305,6 @@ h3 {
     background: #eee;
     border: none;
     width: 24px;
-    /* Bigger buttons */
     height: 24px;
     font-size: 14px;
     cursor: pointer;
@@ -249,6 +313,28 @@ h3 {
 
 .sm-btn:hover {
     background: #ddd;
+}
+
+.sm-btn-remove {
+    background: #ffebee;
+    border: 1px solid #ffcdd2;
+    color: #c62828;
+    width: 24px;
+    height: 24px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 2px;
+    margin-left: 15px;
+    /* Spacing from the qty controls */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.sm-btn-remove:hover {
+    background: #ffcdd2;
+    border-color: #ef9a9a;
 }
 
 .sm-val {
@@ -284,19 +370,19 @@ h3 {
 .form-section-title {
     font-size: 0.75rem;
     font-weight: 700;
-    color: #000;
+    color: var(--text-body);
     letter-spacing: 1.5px;
     margin-top: 12px;
     margin-bottom: 8px;
     padding-bottom: 5px;
-    border-bottom: 2px solid #222;
+    border-bottom: 2px solid var(--border-nav);
     text-transform: uppercase;
 }
 
 .order-form label {
     font-size: 0.65rem;
     font-weight: bold;
-    color: #444;
+    color: var(--text-body);
     letter-spacing: 0.8px;
     margin-bottom: -2px;
 }
@@ -306,6 +392,7 @@ h3 {
 .order-form select {
     border: 1px solid #ccc;
     background: #fdfdfd;
+    color: #000;
     padding: 8px;
     font-family: 'Roboto', sans-serif;
     font-size: 0.8rem;
@@ -324,6 +411,7 @@ h3 {
 .order-form select {
     cursor: pointer;
     appearance: none;
+    color: #000;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 8px center;
@@ -371,8 +459,8 @@ h3 {
     top: 20px;
     left: 20px;
     z-index: 1000;
-    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-    color: #fff;
+    background: linear-gradient(135deg, var(--bg-sidebar-start) 0%, var(--bg-sidebar-end) 100%);
+    color: var(--text-nav-hover);
     border: none;
     padding: 12px 18px;
     font-size: 1.3rem;
@@ -383,7 +471,7 @@ h3 {
 }
 
 #nav-toggle:hover {
-    background: linear-gradient(135deg, #2d2d2d 0%, #404040 100%);
+    background: linear-gradient(135deg, var(--bg-sidebar-end) 0%, var(--bg-sidebar-start) 100%);
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
 }
@@ -395,7 +483,7 @@ h3 {
     /* Hidden by default */
     width: 250px;
     height: 100vh;
-    background: linear-gradient(180deg, #1a1a1a 0%, #2a2a2a 100%);
+    background: linear-gradient(180deg, var(--bg-sidebar-start) 0%, var(--bg-sidebar-end) 100%);
     z-index: 999;
     box-shadow: 4px 0 20px rgba(0, 0, 0, 0.5);
     transition: left 0.4s ease;
@@ -418,9 +506,9 @@ h3 {
 
 .nav-menu h3 {
     padding: 0 20px 12px;
-    border-bottom: 2px solid #444;
+    border-bottom: 2px solid var(--border-nav);
     margin-bottom: 15px;
-    color: #fff;
+    color: var(--text-nav-hover);
     font-size: 1rem;
     letter-spacing: 2px;
     font-weight: 600;
@@ -443,7 +531,7 @@ h3 {
 }
 
 .nav-menu ul::-webkit-scrollbar-track {
-    background: #1a1a1a;
+    background: var(--bg-sidebar-start);
 }
 
 .nav-menu ul::-webkit-scrollbar-thumb {
@@ -459,29 +547,29 @@ h3 {
     padding: 14px 20px;
     cursor: pointer;
     font-size: 1rem;
-    color: #ccc;
-    border-bottom: 1px solid #333;
+    color: var(--text-nav);
+    border-bottom: 1px solid var(--border-nav);
     transition: all 0.3s ease;
     font-weight: 500;
     letter-spacing: 0.5px;
 }
 
 .nav-menu li:hover {
-    background: linear-gradient(90deg, #333 0%, #2a2a2a 100%);
-    color: #fff;
+    background: var(--bg-nav-highlight-hover);
+    color: var(--text-nav-hover);
     padding-left: 28px;
     border-left: 4px solid #d4af37;
 }
 
 .nav-menu li.highlight {
     font-weight: 700;
-    color: #fff;
-    background: linear-gradient(90deg, #2d2d2d 0%, #252525 100%);
+    color: var(--text-nav-highlight);
+    background: var(--bg-nav-highlight);
     border-left: 3px solid #4a9eff;
 }
 
 .nav-menu li.highlight:hover {
-    background: linear-gradient(90deg, #3a3a3a 0%, #2d2d2d 100%);
+    background: var(--bg-nav-highlight-hover);
     border-left: 4px solid #6bb3ff;
 }
 
@@ -592,4 +680,462 @@ h3 {
     display: block;
     margin: 0 auto;
     filter: brightness(1.1);
+}
+
+/* LIGHTBOX STYLES */
+.lightbox-overlay {
+    display: none;
+    /* Hidden by default */
+    position: fixed;
+    z-index: 2000;
+    /* On top of everything */
+    padding-top: 50px;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.9);
+    /* Black w/ opacity */
+}
+
+.lightbox-content {
+    margin: auto;
+    display: block;
+    width: 80%;
+    max-width: 700px;
+    max-height: 80vh;
+    object-fit: contain;
+    animation-name: zoom;
+    animation-duration: 0.3s;
+}
+
+@keyframes zoom {
+    from {
+        transform: scale(0)
+    }
+
+    to {
+        transform: scale(1)
+    }
+}
+
+.lightbox-close {
+    position: absolute;
+    top: 15px;
+    right: 35px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    transition: 0.3s;
+    cursor: pointer;
+}
+
+.lightbox-close:hover,
+.lightbox-close:focus {
+    color: #bbb;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Response for smaller screens */
+@media only screen and (max-width: 700px) {
+    .lightbox-content {
+        width: 100%;
+    }
+}
+
+/* Zoom Icon on Patterns */
+.zoom-icon {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    color: #333;
+    z-index: 5;
+    transition: all 0.2s ease;
+}
+
+.zoom-icon:hover {
+    background: rgba(255, 255, 255, 0.9);
+    transform: scale(1.1);
+}
+
+/* INPUT ERROR STATE */
+.input-error {
+    border: 2px solid #ff4444 !important;
+    background-color: #ffe6e6 !important;
+    transition: all 0.3s ease;
+}
+
+.input-error:focus {
+    border-color: #cc0000 !important;
+    box-shadow: 0 0 5px rgba(204, 0, 0, 0.3) !important;
+}
+
+/* --- ENHANCED LIGHTBOX STYLES --- */
+.lightbox-overlay {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.85);
+    /* Darker backdrop */
+    backdrop-filter: blur(5px);
+}
+
+/* LOADING SCREEN */
+#loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #0c0c0c;
+    /* Match dark theme bg */
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.8s ease-out, visibility 0.8s ease-out;
+}
+
+#loading-screen.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.loader-logo {
+    width: 200px;
+    height: auto;
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.95);
+        opacity: 0.8;
+    }
+
+    50% {
+        transform: scale(1.05);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(0.95);
+        opacity: 0.8;
+    }
+}
+
+/* --- SCROLLING & RESPONSIVENESS FIXES --- */
+
+.page-content {
+    /* Allow scrolling within pages */
+    overflow-y: auto;
+    overflow-x: hidden;
+    /* Custom Scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: #ccc transparent;
+}
+
+.page-content::-webkit-scrollbar {
+    width: 4px;
+}
+
+.page-content::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 4px;
+}
+
+/* Fabric Grid - dynamic rows */
+.fabric-grid {
+    grid-template-rows: auto;
+    /* Allow rows to grow */
+    align-content: start;
+    padding-bottom: 40px;
+    /* Space for scrolling */
+}
+
+/* Enhanced Lightbox Background */
+.lightbox-overlay {
+    background-color: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(8px);
+}
+
+/* --- MOBILE RESPONSIVENESS --- */
+@media screen and (max-width: 768px) {
+
+    /* Adjust container padding */
+    .book-container {
+        padding: 0;
+    }
+
+    /* Pages should take full width on mobile if single view */
+    /* Note: PageFlip library handles scaling, but we help it */
+
+    /* Fabric Grid: 2 columns on mobile instead of 3 if very narrow, but 3 usually fine for 375px+ */
+    .fabric-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 5px;
+    }
+
+    .swatch-img {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 1/1;
+    }
+
+    /* Header adjustments */
+    .header-section h2 {
+        font-size: 1.2rem;
+    }
+
+    .nav-toggle {
+        font-size: 1.5rem;
+        padding: 10px;
+    }
+}
+
+/* Lightbox Content Box */
+.lightbox-content {
+    background-color: #fff;
+    margin: 5% auto;
+    /* 15% from the top and centered */
+    padding: 0;
+    border: 1px solid #888;
+    width: 90%;
+    max-width: 900px;
+    height: auto;
+    max-height: 90vh;
+    border-radius: 4px;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+}
+
+.lightbox-close {
+    color: #aaa;
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 35px;
+    font-weight: bold;
+    z-index: 10;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.lightbox-close:hover,
+.lightbox-close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.lightbox-body {
+    display: flex;
+    height: 100%;
+    overflow: hidden;
+}
+
+.lightbox-image-container {
+    flex: 6;
+    /* 60% with */
+    background: #f5f5f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-right: 1px solid #eee;
+    padding: 20px;
+}
+
+.lightbox-image-container img {
+    max-width: 100%;
+    max-height: 80vh;
+    /* Keep it within view */
+    object-fit: contain;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.lightbox-details {
+    flex: 4;
+    /* 40% width */
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* Lightbox Typography */
+.lightbox-details h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    margin-bottom: 5px;
+    color: #000;
+}
+
+.pattern-id {
+    color: #888;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 30px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+}
+
+/* Stock Status Colors */
+.lb-stock-info {
+    margin-bottom: 30px;
+    background: #fafafa;
+    padding: 15px;
+    border-radius: 4px;
+}
+
+#lb-stock-status {
+    font-weight: bold;
+    font-size: 1.1rem;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.status-in-stock {
+    color: #2e7d32;
+}
+
+.status-low-stock {
+    color: #f57c00;
+}
+
+.status-out-of-stock {
+    color: #c62828;
+}
+
+.stock-detail {
+    font-size: 0.85rem;
+    color: #666;
+    margin: 0;
+}
+
+/* Big Qty Selector */
+.lb-controls {
+    margin-bottom: 20px;
+}
+
+.lb-controls label {
+    display: block;
+    font-size: 0.9rem;
+    color: #333;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.qty-selector.large {
+    display: inline-flex;
+    padding: 5px;
+    border: 2px solid #000;
+}
+
+.qty-selector.large .qty-btn {
+    font-size: 1.5rem;
+    width: 40px;
+    height: 40px;
+    color: #000;
+}
+
+.qty-selector.large .qty-val {
+    font-size: 1.5rem;
+    min-width: 60px;
+    line-height: 40px;
+}
+
+.lb-instruction {
+    font-size: 0.8rem;
+    color: #999;
+    font-style: italic;
+    margin-top: auto;
+    /* Push to bottom */
+}
+
+/* Mobile Responsiveness for Lightbox */
+@media (max-width: 768px) {
+    .lightbox-body {
+        flex-direction: column;
+        overflow-y: auto;
+    }
+
+    .lightbox-image-container {
+        flex: none;
+        height: 300px;
+        padding: 0;
+    }
+
+    .lightbox-image-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .lightbox-details {
+        flex: none;
+        padding: 20px;
+    }
+
+    .lightbox-content {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        max-height: 100%;
+        border-radius: 0;
+    }
+
+    .lightbox-close {
+        color: #000;
+        background: rgba(255, 255, 255, 0.8);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        text-align: center;
+        line-height: 40px;
+        top: 10px;
+        right: 10px;
+    }
+}
+
+/* --- OUT OF STOCK BADGE --- */
+.fabric-item.out-of-stock .swatch-img {
+    opacity: 0.5;
+    filter: grayscale(100%);
+    cursor: not-allowed;
+}
+
+.out-of-stock-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    padding: 5px 10px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 5;
 }

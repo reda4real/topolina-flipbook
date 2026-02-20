@@ -1,4 +1,5 @@
 // Product Data Management System - Dynamic Version
+// Updated to match server.js defaults (JPG migration)
 
 let PRODUCTS_CACHE = null;
 

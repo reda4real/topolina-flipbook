@@ -36,7 +36,29 @@ async function createTablesMysql() {
     try {
         await conn.query(`CREATE TABLE IF NOT EXISTS products (
             id VARCHAR(255) PRIMARY KEY,
-            data LONGTEXT
+            display_name VARCHAR(255),
+            consumption_entire DECIMAL(10,2),
+            consumption_outside DECIMAL(10,2),
+            consumption_inside DECIMAL(10,2),
+            cover_image VARCHAR(255),
+            sketch_image VARCHAR(255),
+            shop_image VARCHAR(255),
+            price_ex_works DECIMAL(10,2),
+            price_landed DECIMAL(10,2),
+            price_retail DECIMAL(10,2)
+        )`);
+
+        await conn.query(`CREATE TABLE IF NOT EXISTS patterns (
+            id VARCHAR(255),
+            product_id VARCHAR(255),
+            name VARCHAR(255),
+            image VARCHAR(255),
+            fabric_id VARCHAR(255),
+            stock_type VARCHAR(50) DEFAULT 'meters',
+            available_meters DECIMAL(10,2) DEFAULT 0,
+            available_quantity INT DEFAULT 0,
+            PRIMARY KEY (product_id, id),
+            FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
         )`);
 
         await conn.query(`CREATE TABLE IF NOT EXISTS orders (
@@ -50,6 +72,12 @@ async function createTablesMysql() {
             filename VARCHAR(255) PRIMARY KEY,
             original_name VARCHAR(255),
             uploaded_at BIGINT
+        )`);
+
+        await conn.query(`CREATE TABLE IF NOT EXISTS fabrics (
+            id VARCHAR(255) PRIMARY KEY,
+            name VARCHAR(255),
+            availableMeters REAL
         )`);
     } finally {
         conn.release();
@@ -90,5 +118,6 @@ module.exports = {
     init,
     query,
     run,
-    get
+    get,
+    getConnection: () => mysqlPool.getConnection()
 };

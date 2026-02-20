@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 
 <head>
     <meta charset="UTF-8">
@@ -12,6 +12,11 @@
 </head>
 
 <body>
+
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <img src="images/logos/logo-topolina-light-280x89.png" alt="Loading..." class="loader-logo">
+    </div>
 
     <div class="book-container">
         <div id="book">
@@ -139,6 +144,38 @@
         </div>
     </div>
 
+    <!-- Enhanced Pattern Lightbox -->
+    <div id="patternLightbox" class="lightbox-overlay">
+        <div class="lightbox-content">
+            <span class="lightbox-close">&times;</span>
+            <div class="lightbox-body">
+                <div class="lightbox-image-container">
+                    <img id="lb-pattern-img" src="" alt="Pattern Detail">
+                </div>
+                <div class="lightbox-details">
+                    <h2 id="lb-pattern-name">Pattern Name</h2>
+                    <p id="lb-pattern-id" class="pattern-id">ID: XYZ</p>
+
+                    <div class="lb-stock-info">
+                        <span id="lb-stock-status">Checking stock...</span>
+                        <p id="lb-stock-detail" class="stock-detail"></p>
+                    </div>
+
+                    <div class="lb-controls">
+                        <label>Quantity:</label>
+                        <div class="qty-selector large">
+                            <button class="qty-btn" id="lb-qty-minus">-</button>
+                            <span class="qty-val" id="lb-qty-val">0</span>
+                            <button class="qty-btn" id="lb-qty-plus">+</button>
+                        </div>
+                    </div>
+
+                    <p class="lb-instruction">Adjust quantity to add to your order.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- NAVIGATION SIDEBAR -->
     <div id="nav-sidebar">
         <button id="nav-toggle" aria-label="Toggle Navigation">☰</button>
@@ -146,6 +183,14 @@
             <div class="nav-logo">
                 <img src="images/logos/logo-topolina-light-280x89.png" alt="TOPOLINA" class="logo-img">
             </div>
+
+            <!-- Theme Toggle -->
+            <div class="theme-toggle-container" style="padding: 0 20px 15px;">
+                <button class="theme-toggle-btn" onclick="toggleTheme()"
+                    style="width: 100%; padding: 10px; cursor: pointer; background: #333; color: #fff; border: 1px solid #555; border-radius: 4px;">🌙
+                    Dark Mode</button>
+            </div>
+
             <h3 data-i18n="nav.jumpTo">JUMP TO</h3>
             <ul>
                 <li onclick="flipToPage(1)" data-i18n="nav.cover">Cover</li>
@@ -154,26 +199,19 @@
                 <li class="highlight" onclick="navigateToPageId('page-order-form')" data-i18n="nav.placeOrder">Place
                     Order</li>
 
-                <li style="margin-top: 15px; font-weight: bold; color: #fff; cursor: default;">PRODUCTS</li>
-                <li onclick="flipToPage(5)" data-i18n="nav.chemise">Shirt</li>
-                <li onclick="flipToPage(10)" data-i18n="nav.pontalon">Pants</li>
-                <li onclick="flipToPage(15)" data-i18n="nav.chemiseSansManche">Sleeveless Shirt</li>
-                <li onclick="flipToPage(20)" data-i18n="nav.jupe">Skirt</li>
-                <li onclick="flipToPage(25)" data-i18n="nav.manteauDroit">Straight Coat</li>
-                <li onclick="flipToPage(28)" data-i18n="nav.robeEsabel">Isabelle Dress</li>
-                <li onclick="flipToPage(31)" data-i18n="nav.topEsabel">Isabelle Top</li>
-                <li onclick="flipToPage(34)" data-i18n="nav.manteau34">3/4 Coat</li>
-                <li onclick="flipToPage(38)" data-i18n="nav.manteauLong">Long Coat</li>
-                <li onclick="flipToPage(43)" data-i18n="nav.vest">Vest</li>
-                <li onclick="flipToPage(48)" data-i18n="nav.robeLong">Long Dress</li>
+                <li id="nav-products-header" style="margin-top: 15px; font-weight: bold; color: #fff; cursor: default;">
+                    PRODUCTS</li>
+                <!-- Dynamic Product Links Will Be Inserted Here -->
 
-                <li class="admin-link"><a href="/admin" data-i18n="admin.panel">🔐 Admin Panel</a>
+                <li class="admin-link"><a href="admin" data-i18n="admin.panel">🔐 Admin Panel</a>
                 </li>
             </ul>
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.js"></script>
+    <script src="theme-manager.js"></script>
     <script src="products-data.js"></script>
     <script src="translations.js"></script>
     <script src="dynamic-pages.js"></script>

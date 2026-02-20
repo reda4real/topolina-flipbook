@@ -56,7 +56,7 @@ function checkSession() {
 
 async function login(password) {
     try {
-        const response = await fetch('/api/admin/login', {
+        const response = await fetch('api/admin/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ password })
@@ -249,7 +249,7 @@ function saveOrders(orders) {
 async function loadOrders() {
     const token = localStorage.getItem(SESSION_KEY);
     try {
-        const response = await fetch('/api/orders', {
+        const response = await fetch('api/orders', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         if (response.status === 401) { logout(); return; }
@@ -304,6 +304,9 @@ function createOrderCard(order) {
     const moreItems = order.items.length > 3 ?
         `<span class="pattern-item">+${order.items.length - 3} more...</span>` : '';
 
+    const totalExWorks = calculateOrderTotal(order);
+    const totalDisplay = totalExWorks > 0 ? `$${totalExWorks.toFixed(2)}` : 'N/A';
+
     return `
         <div class="order-card" data-order-id="${order.id}">
             <div class="order-header">
@@ -313,6 +316,7 @@ function createOrderCard(order) {
                     ${order.company ? `<p class="order-meta">🏢 ${order.company}</p>` : ''}
                     ${order.phone ? `<p class="order-meta">📱 ${order.phone}</p>` : ''}
                     <p class="order-meta">🕒 ${date}</p>
+                    <p class="order-meta" style="margin-top: 5px; font-weight: bold; color: #2e7d32;">💰 Total Ex-Works: ${totalDisplay}</p>
                 </div>
                 <span class="order-status ${statusClass}">${statusText}</span>
             </div>
@@ -324,6 +328,7 @@ function createOrderCard(order) {
                 </div>
             </div>
             <div class="order-actions">
+                <button class="btn-view" data-action="download-pdf" data-order-id="${order.id}" style="background-color: #4CAF50; color: white;">Download PDF</button>
                 <button class="btn-view" data-action="view" data-order-id="${order.id}">View Full Order</button>
                 ${order.status === 'pending' ?
             `<button class="btn-success" data-action="confirm" data-order-id="${order.id}">Confirm Order</button>` :
@@ -347,15 +352,14 @@ function attachOrderActions() {
 
 async function handleOrderAction(action, orderId) {
     if (action === 'view') {
-        // Need to find the order object. Since we don't have it in memory easily without re-fetching or storing globally,
-        // let's just fetch all again or optimize. For now, fetching all is fine for admin panel scale.
-        const token = localStorage.getItem(SESSION_KEY);
-        const response = await fetch('/api/orders', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const orders = await response.json();
-        const order = orders.find(o => o.id === orderId);
+        const order = await getOrderById(orderId);
         if (order) showOrderDetails(order);
+        return;
+    }
+
+    if (action === 'download-pdf') {
+        const order = await getOrderById(orderId);
+        if (order) downloadOrderPDF(order);
         return;
     }
 
@@ -384,7 +388,7 @@ async function handleOrderAction(action, orderId) {
 async function confirmOrder(orderId, status = 'confirmed') {
     const token = localStorage.getItem(SESSION_KEY);
     try {
-        await fetch(`/api/orders/${orderId}`, {
+        await fetch(`api/orders/${orderId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -402,7 +406,7 @@ async function confirmOrder(orderId, status = 'confirmed') {
 async function deleteOrder(orderId) {
     const token = localStorage.getItem(SESSION_KEY);
     try {
-        await fetch(`/api/orders/${orderId}`, {
+        await fetch(`api/orders/${orderId}`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -422,20 +426,24 @@ function showOrderDetails(order) {
         <div class="order-details-full">
             <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px;">
                 <div>
-                    <h2 style="color: #000000; margin-bottom: 10px;">${order.contactPerson || order.name}</h2>
-                    <p style="color: #333333; margin-bottom: 5px;">📧 ${order.email}</p>
-                    ${order.company ? `<p style="color: #333333; margin-bottom: 5px;">🏢 ${order.company}</p>` : ''}
-                    ${order.taxId ? `<p style="color: #333333; margin-bottom: 5px;">🆔 Tax ID: ${order.taxId}</p>` : ''}
-                    ${order.phone ? `<p style="color: #333333; margin-bottom: 5px;">📱 ${order.phone}</p>` : ''}
-                    <p style="color: #666666; font-size: 0.9rem;">🕒 ${date}</p>
+                    <h2 class="text-main" style="margin-bottom: 10px;">${order.contactPerson || order.name}</h2>
+                    <p class="text-secondary" style="margin-bottom: 5px;">📧 ${order.email}</p>
+                    ${order.company ? `<p class="text-secondary" style="margin-bottom: 5px;">🏢 ${order.company}</p>` : ''}
+                    ${order.taxId ? `<p class="text-secondary" style="margin-bottom: 5px;">🆔 Tax ID: ${order.taxId}</p>` : ''}
+                    ${order.phone ? `<p class="text-secondary" style="margin-bottom: 5px;">📱 ${order.phone}</p>` : ''}
+                    <p class="text-muted" style="font-size: 0.9rem;">🕒 ${date}</p>
                 </div>
                 <span class="order-status ${statusClass}">${statusText}</span>
             </div>
             
+            <div style="background: #e8f5e9; padding: 15px; margin-bottom: 20px; border: 1px solid #c8e6c9; border-radius: 0;">
+                <h3 style="margin: 0; color: #2e7d32;">Total Ex-Works Price: $${calculateOrderTotal(order).toFixed(2)}</h3>
+            </div>
+            
             ${(order.address || order.streetAddress) ? `
-                <div style="margin-bottom: 20px; padding: 15px; background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 0;">
-                    <h4 style="color: #333333; margin-bottom: 10px;">📍 Delivery Address</h4>
-                    <p style="color: #000000; white-space: pre-line;">
+                <div class="order-info-group">
+                    <h4 class="text-secondary" style="margin-bottom: 10px;">📍 Delivery Address</h4>
+                    <p class="text-main" style="white-space: pre-line;">
                         ${order.address ||
             `${order.streetAddress}
                         ${order.city}, ${order.state || ''} ${order.postalCode}
@@ -445,24 +453,47 @@ function showOrderDetails(order) {
             ` : ''}
             
             <div style="margin-bottom: 20px;">
-                <h4 style="color: #333333; margin-bottom: 15px;">📦 Ordered Patterns (${order.items.length} items)</h4>
+                <h4 class="text-secondary" style="margin-bottom: 15px;">📦 Ordered Patterns (${order.items.length} items)</h4>
                 <div style="display: grid; gap: 15px;">
-                    ${order.items.map(item => `
-                        <div style="padding: 15px; background: #f9f9f9; border: 2px solid #000000; border-radius: 0; display: flex; align-items: center; gap: 15px;">
+                    ${order.items.map(item => {
+                // Attempt to find product price
+                let pricesHtml = '';
+                try {
+                    const products = getProducts();
+                    const productKey = item.product.split(' - ')[0];
+                    const product = products[productKey];
+                    if (product) {
+                        const retail = product.priceRetail ? `$${product.priceRetail}` : '-';
+                        const exWorks = product.priceExWorks ? `$${product.priceExWorks}` : '-';
+                        const landed = product.priceLanded ? `$${product.priceLanded}` : '-';
+
+                        pricesHtml = `
+                                    <div class="text-muted" style="display: flex; gap: 15px; font-size: 0.85rem; margin-top: 5px;">
+                                        <span>Ex-Works: <strong>${exWorks}</strong></span>
+                                        <span>Landed: <strong>${landed}</strong></span>
+                                        <span>Retail: <strong>${retail}</strong></span>
+                                    </div>
+                                `;
+                    }
+                } catch (e) { }
+
+                return `
+                        <div class="order-item-card">
                             ${item.image ? `<img src="${item.image}" alt="${item.product}" style="width: 60px; height: 60px; object-fit: cover; border: 1px solid #ddd;">` : ''}
                             <div style="flex: 1;">
-                                <div style="color: #000000; font-weight: 500; margin-bottom: 5px;">${item.product}</div>
-                                <div style="color: #666666; font-size: 0.9rem;">Quantity: <strong style="color: #000000;">${item.quantity}</strong></div>
+                                <div class="text-main" style="font-weight: 500; margin-bottom: 5px;">${item.product}</div>
+                                <div class="text-muted" style="font-size: 0.9rem;">Quantity: <strong class="text-main">${item.quantity}</strong></div>
+                                ${pricesHtml}
                             </div>
                         </div>
-                    `).join('')}
+                    `}).join('')}
                 </div>
             </div>
             
             ${order.notes ? `
-                <div style="padding: 15px; background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 0;">
-                    <h4 style="color: #333333; margin-bottom: 10px;">📝 Notes</h4>
-                    <p style="color: #000000; white-space: pre-line;">${order.notes}</p>
+                <div class="order-info-group">
+                    <h4 class="text-secondary" style="margin-bottom: 10px;">📝 Notes</h4>
+                    <p class="text-main" style="white-space: pre-line;">${order.notes}</p>
                 </div>
             ` : ''}
         </div>
@@ -534,6 +565,22 @@ function renderProductEditor() {
                     <input type="text" id="productDisplayName" value="${data.displayName}">
                 </div>
             </div>
+            
+            <h4 style="margin-top: 15px; margin-bottom: 10px;">Pricing (USD)</h4>
+            <div class="form-row">
+                <div class="form-field">
+                    <label>Ex-Works Price</label>
+                    <input type="number" id="priceExWorks" value="${data.priceExWorks || ''}" placeholder="0.00">
+                </div>
+                <div class="form-field">
+                    <label>Landed Price</label>
+                    <input type="number" id="priceLanded" value="${data.priceLanded || ''}" placeholder="0.00">
+                </div>
+                <div class="form-field">
+                    <label>Retail Price (RRP)</label>
+                    <input type="number" id="priceRetail" value="${data.priceRetail || ''}" placeholder="0.00">
+                </div>
+            </div>
         </div>
 
         <div class="patterns-section">
@@ -552,6 +599,16 @@ function renderProductEditor() {
     // Attach event listeners
     document.getElementById('productDisplayName').addEventListener('input', (e) => {
         currentProduct.data.displayName = e.target.value;
+    });
+
+    // Price Listeners
+    ['priceExWorks', 'priceLanded', 'priceRetail'].forEach(field => {
+        const el = document.getElementById(field);
+        if (el) {
+            el.addEventListener('input', (e) => {
+                currentProduct.data[field] = parseFloat(e.target.value) || null;
+            });
+        }
     });
 }
 
@@ -602,7 +659,7 @@ window.handleImageUpload = async function (index, input) {
 
     try {
         // Show loading state if possible, or just wait
-        const response = await fetch('/api/upload', {
+        const response = await fetch('api/upload', {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${token}` },
             body: formData
@@ -702,21 +759,24 @@ function renderInventoryEditor() {
     let consumptionInfo = '';
     if (data.consumption) {
         if (data.consumption.entire) {
-            consumptionInfo = `<div style="background: #e8f5e9; padding: 10px; margin-bottom: 20px; border: 1px solid #c8e6c9; border-radius: 0;">
+            const entire = parseFloat(data.consumption.entire);
+            consumptionInfo = `<div class="consumption-info">
                 <strong style="display:block; margin-bottom:5px;">📏 Fabric Consumption:</strong> 
-                <span style="font-size: 1.1em;">${data.consumption.entire.toFixed(2)} meters</span> per unit
+                <span style="font-size: 1.1em;">${!isNaN(entire) ? entire.toFixed(2) : '-'} meters</span> per unit
             </div>`;
         } else {
-            consumptionInfo = `<div style="background: #e8f5e9; padding: 10px; margin-bottom: 20px; border: 1px solid #c8e6c9; border-radius: 0;">
+            const outside = parseFloat(data.consumption.outside);
+            const inside = parseFloat(data.consumption.inside);
+            consumptionInfo = `<div class="consumption-info">
                 <strong style="display:block; margin-bottom:5px;">📏 Fabric Consumption:</strong>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <div>Outer: <strong>${data.consumption.outside.toFixed(2)} m</strong></div>
-                    <div>Inner: <strong>${data.consumption.inside.toFixed(2)} m</strong></div>
+                    <div>Outer: <strong>${!isNaN(outside) ? outside.toFixed(2) : '-'} m</strong></div>
+                    <div>Inner: <strong>${!isNaN(inside) ? inside.toFixed(2) : '-'} m</strong></div>
                 </div>
             </div>`;
         }
     } else {
-        consumptionInfo = `<div style="background: #fff3e0; padding: 10px; margin-bottom: 20px; border: 1px solid #ffcc80; border-radius: 0;">
+        consumptionInfo = `<div class="consumption-warning">
             <strong>⚠️ No consumption data available</strong> for this product.
         </div>`;
     }
@@ -820,3 +880,202 @@ window.saveInventory = async function () {
     }
 };
 
+
+// Helper to get order by ID
+async function getOrderById(orderId) {
+    const token = localStorage.getItem(SESSION_KEY);
+    try {
+        const response = await fetch('api/orders', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const orders = await response.json();
+        return orders.find(o => o.id === orderId);
+    } catch (e) {
+        console.error("Failed to fetch order", e);
+        return null;
+    }
+}
+
+function calculateOrderTotal(order) {
+    let total = 0;
+    const products = getProducts(); // items usually loaded by now
+
+    order.items.forEach(item => {
+        try {
+            const productKey = item.product.split(' - ')[0];
+            const product = products[productKey];
+            if (product && product.priceExWorks) {
+                total += (parseFloat(product.priceExWorks) * item.quantity);
+            }
+        } catch (e) { }
+    });
+
+    return total;
+}
+
+// PDF Download Logic for Admin
+async function downloadOrderPDF(order) {
+    const { jsPDF } = window.jspdf;
+    if (!jsPDF) {
+        alert("PDF Library not loaded.");
+        return;
+    }
+
+    const doc = new jsPDF();
+
+    // Helper to load image as Base64
+    const loadImage = (src) => {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.crossOrigin = "Anonymous";
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                try {
+                    resolve(canvas.toDataURL('image/jpeg'));
+                } catch (e) {
+                    console.warn("Canvas export failed", e);
+                    resolve(null);
+                }
+            };
+            img.onerror = () => {
+                console.warn("Image load failed", src);
+                resolve(null);
+            };
+            img.src = src;
+        });
+    };
+
+    // Header
+    doc.setFontSize(20);
+    doc.text("Topolina Order Summary", 105, 20, null, null, "center");
+
+    doc.setFontSize(12);
+    const date = new Date(order.timestamp).toLocaleDateString();
+    doc.text(`Date: ${date}`, 20, 30);
+    doc.text(`Order ID: ${order.id}`, 20, 36);
+
+    // Client Info
+    doc.text(`Company: ${order.company || "N/A"}`, 20, 46);
+    doc.text(`Contact: ${order.contactPerson || order.name || "N/A"}`, 20, 52);
+    doc.text(`Email: ${order.email || "N/A"}`, 20, 58);
+    doc.text(`Phone: ${order.phone || "N/A"}`, 20, 64);
+
+    // Shipping Address
+    const address = order.address ||
+        `${order.streetAddress || ''}, ${order.city || ''}, ${order.postalCode || ''}, ${order.country || ''}`;
+
+    const splitAddress = doc.splitTextToSize(`Address: ${address}`, 170);
+    doc.text(splitAddress, 20, 70);
+
+    let y = 80 + (splitAddress.length * 5);
+    doc.line(20, y, 190, y);
+    y += 10;
+
+    // Table Header
+    doc.setFontSize(10);
+    doc.text("Pattern", 20, y);
+    doc.text("Product Info", 50, y);
+    doc.text("Price", 130, y);
+    doc.text("Quantity", 160, y);
+
+    y += 5;
+    doc.line(20, y, 190, y);
+    y += 10;
+
+    // Items
+    let total = 0;
+    for (const item of order.items) {
+        // Check for page break
+        if (y > 270) {
+            doc.addPage();
+            y = 20;
+        }
+
+        // Add Image
+        if (item.image) {
+            const imgData = await loadImage(item.image);
+            if (imgData) {
+                doc.addImage(imgData, 'JPEG', 20, y - 5, 20, 20);
+            }
+        }
+
+        // Lookup Prices
+        let priceText = "-";
+        try {
+            const products = getProducts(); // Synchronous lookup from loaded data
+            const productKey = item.product.split(' - ')[0];
+            const product = products[productKey];
+            if (product) {
+                const p = product;
+                const retail = p.priceRetail ? `$${p.priceRetail}` : 'N/A';
+                // You can add more prices if needed, e.g. Ex-Works
+                priceText = `${retail} (RRP)`;
+            }
+        } catch (e) { console.warn("Price lookup failed", e); }
+
+        // Add Text
+        const splitProduct = doc.splitTextToSize(item.product, 70);
+        doc.text(splitProduct, 50, y + 5);
+
+        doc.setFontSize(9);
+        doc.text(priceText, 130, y + 5);
+        doc.setFontSize(10);
+
+        doc.text(String(item.quantity), 160, y + 5);
+
+        total += item.quantity;
+
+        // Dynamic Y adjustment based on product name height
+        const height = (splitProduct.length * 5) + 15; // increased buffer
+        y += Math.max(25, height);
+    }
+
+    // Final Line
+    if (y > 270) {
+        doc.addPage();
+        y = 20;
+    }
+
+    // Total
+    doc.line(20, y, 190, y);
+    y += 10;
+    doc.setFontSize(12);
+    doc.line(20, y, 190, y);
+    y += 10;
+    doc.setFontSize(12);
+    doc.text(`TOTAL UNITS: ${total}`, 20, y);
+
+    const totalPrice = calculateOrderTotal(order);
+    if (totalPrice > 0) {
+        doc.text(`TOTAL EX-WORKS: $${totalPrice.toFixed(2)}`, 130, y);
+    }
+
+    if (order.notes) {
+        y += 15;
+        if (y > 270) { doc.addPage(); y = 20; }
+        doc.setFontSize(10);
+        doc.text("Notes:", 20, y);
+        const splitNotes = doc.splitTextToSize(order.notes, 170);
+        doc.text(splitNotes, 20, y + 5);
+    }
+
+    // Download
+    try {
+        const blob = doc.output('blob');
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Topolina_Order_${order.id}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    } catch (err) {
+        console.error("Blob download failed", err);
+        doc.save(`Topolina_Order_${order.id}.pdf`);
+    }
+}

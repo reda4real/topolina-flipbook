@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 
 <head>
     <meta charset="UTF-8">
@@ -40,6 +40,8 @@
                 <div style="display: flex; gap: 10px; align-items: center;">
                     <a href="index.html" class="btn-secondary" style="text-decoration: none; display: inline-block;">←
                         Back to Flipbook</a>
+                    <button class="theme-toggle-btn btn-secondary" onclick="toggleTheme()" style="min-width: 120px;">🌙
+                        Dark Mode</button>
                     <button id="logoutBtn" class="btn-secondary">Logout</button>
                 </div>
             </div>
@@ -51,6 +53,7 @@
             <button class="tab-btn" data-tab="products">🎨 Product Management</button>
             <button class="tab-btn" data-tab="images">🖼️ Image Management</button>
             <button class="tab-btn" data-tab="inventory">📏 Inventory Control</button>
+            <button class="tab-btn" data-tab="fabrics">🧵 Shared Fabrics</button>
         </div>
 
         <!-- Orders Tab -->
@@ -124,14 +127,31 @@
                 </div>
             </div>
 
-            <div class="inventory-info-box"
-                style="background: #eef; padding: 15px; margin-bottom: 20px; border: 1px solid #ccd;">
+            <div class="inventory-note">
                 <strong>ℹ️ Note:</strong> Some products (Vest, 3/4 Coat, Long Coat, Straight Coat) may consume multiple
                 patterns. Ensure you update inventory for all relevant patterns.
             </div>
 
             <div id="inventoryEditor" class="product-editor">
                 <p class="no-orders">Select a product to manage inventory</p>
+            </div>
+        </main>
+
+        <!-- Fabrics Tab -->
+        <main id="fabricsTab" class="dashboard-main tab-content" style="display: none;">
+            <div class="controls-bar">
+                <div class="filter-group">
+                    <select id="fabricSelector" class="product-selector">
+                        <option value="">Select a fabric to manage...</option>
+                    </select>
+                </div>
+                <div class="stats">
+                    <button class="btn-primary" onclick="showAddFabricModal()">+ Create Fabric Group</button>
+                </div>
+            </div>
+
+            <div id="fabricEditor" class="product-editor">
+                <p class="no-orders">Select a fabric to start editing</p>
             </div>
         </main>
     </div>
@@ -159,9 +179,58 @@
         </div>
     </div>
 
+    <!-- Add Fabric Modal -->
+    <div id="addFabricModal" class="modal">
+        <div class="modal-content">
+            <h3>Create New Fabric Group</h3>
+            <div class="form-group">
+                <label>Fabric Name</label>
+                <input type="text" id="newFabricName" placeholder="e.g. Red Wool">
+            </div>
+            <div class="form-group">
+                <label>Initial Stock (Meters)</label>
+                <input type="number" id="newFabricStock" value="0" min="0" step="0.1">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-primary" onclick="submitNewFabric()">Create</button>
+                <button class="btn-secondary" onclick="closeAddFabricModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Link Pattern Modal -->
+    <div id="linkPatternModal" class="modal">
+        <div class="modal-content">
+            <h3>Add Pattern to Fabric Group</h3>
+            <p id="linkingFabricName" style="margin-bottom: 15px; font-weight: bold;"></p>
+
+            <div class="form-group">
+                <label>Select Product</label>
+                <select id="linkProductSelector" class="product-selector" onchange="populateLinkPatterns()">
+                    <option value="">Select Product...</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Select Pattern</label>
+                <select id="linkPatternSelector" class="product-selector">
+                    <option value="">Select Pattern...</option>
+                </select>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn-primary" onclick="submitLinkPattern()">Add Pattern</button>
+                <button class="btn-secondary" onclick="closeLinkPatternModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="products-data.js"></script>
     <script src="image-management.js"></script>
+    <script src="theme-manager.js"></script>
     <script src="admin.js"></script>
+    <script src="admin-fabrics.js"></script>
 </body>
 
 </html>

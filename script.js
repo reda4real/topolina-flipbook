@@ -1,9 +1,52 @@
 document.addEventListener('DOMContentLoaded', async function () {
+    // 1. Initialize Loading Screen
+    const loader = document.getElementById('loading-screen');
+    const minLoadTime = 1500; // Minimum time to show logo (1.5s)
+    const startTime = Date.now();
+
+    // Hide loader function
+    const hideLoader = () => {
+        const elapsed = Date.now() - startTime;
+        const remaining = Math.max(0, minLoadTime - elapsed);
+
+        setTimeout(() => {
+            if (loader) {
+                loader.classList.add('hidden');
+                setTimeout(() => loader.remove(), 1000); // Remove from DOM after fade
+            }
+        }, remaining);
+    };
+
+    // Safety Timeout: Force hide after 5 seconds if something hangs
+    setTimeout(hideLoader, 5000);
+
+    // Initialize Theme
+    ThemeManager.init();
+
+    console.log("Starting App Initialization...");
 
     // --- 0. GENERATE DYNAMIC PRODUCT PAGES ---
+    console.log("Starting generateProductPages()...");
     await generateProductPages();
+    console.log("generateProductPages() complete.");
+
+    // Update translations for newly generated content
+    if (typeof updatePageTranslations === 'function') {
+        updatePageTranslations();
+    }
+
+    hideLoader(); // Call hideLoader after all content is generated and ready
+    console.log("Starting generateProductPages()...");
+    await generateProductPages();
+    console.log("generateProductPages() complete.");
+
+    hideLoader(); // Call hideLoader after all content is generated and ready
 
     // --- 1. SETUP THE BOOK ANIMATION ---
+    console.log("Initializing St.PageFlip...");
+    if (typeof St === 'undefined') {
+        console.error("St (PageFlip) is NOT defined. Library script might not be loaded.");
+    }
     window.pageFlipInstance = new St.PageFlip(document.getElementById('book'), {
         width: 260,
         height: 400,
@@ -140,7 +183,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         // 1. Try to find the image if we are clicking on the main grid
         try {
-            let itemDiv = btn.closest('.fabric-item');
+            // Case A: Clicked + / - in Grid
+            let itemDiv = btn ? btn.closest('.fabric-item') : null;
             if (itemDiv) {
                 let imgTag = itemDiv.querySelector('img');
                 if (imgTag) imgUrl = imgTag.src;
@@ -156,6 +200,53 @@ document.addEventListener('DOMContentLoaded', async function () {
         if (!cart[fabricName]) {
             cart[fabricName] = { qty: 0, img: imgUrl };
         }
+
+        // --- STOCK VALIDATION START ---
+        if (change > 0) {
+            try {
+                const parts = fabricName.split(' - ');
+                if (parts.length >= 2) {
+                    const productKey = parts[0];
+                    const patternId = parts[1];
+                    const products = getProducts(); // Global function from products-data.js
+
+                    const product = products[productKey];
+                    if (product) {
+                        const pattern = product.patterns.find(p => p.id === patternId);
+                        if (pattern) {
+                            const currentQty = cart[fabricName].qty;
+                            const nextQty = currentQty + change;
+                            const stockType = pattern.stockType || 'meters';
+
+                            if (stockType === 'quantity') {
+                                const available = pattern.availableQuantity !== undefined ? pattern.availableQuantity : 0;
+                                if (nextQty > available) {
+                                    alert(`Stock Limit Reached!\n\nYou cannot add more of this item.\nAvailable: ${available} units\nIn Cart: ${currentQty}`);
+                                    return; // Cancel update
+                                }
+                            } else {
+                                // Meters validation
+                                const availableMeters = pattern.availableMeters !== undefined ? pattern.availableMeters : 0;
+                                let consumptionPerUnit = 0;
+                                if (product.consumption) {
+                                    if (product.consumption.entire) consumptionPerUnit = product.consumption.entire;
+                                    else if (product.consumption.outside) consumptionPerUnit = product.consumption.outside;
+                                }
+
+                                const totalRequired = nextQty * consumptionPerUnit;
+                                if (totalRequired > availableMeters) {
+                                    alert(`Fabric Limit Reached!\n\nNot enough fabric for this quantity.\nRequired: ${totalRequired.toFixed(2)}m\nAvailable: ${availableMeters}m`);
+                                    return; // Cancel update
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (err) {
+                console.warn("Stock validation warning:", err);
+            }
+        }
+        // --- STOCK VALIDATION END ---
 
         // 4. Update the math
         let newQty = cart[fabricName].qty + change;
@@ -213,12 +304,24 @@ document.addEventListener('DOMContentLoaded', async function () {
                 let row = document.createElement('div');
                 row.className = "summary-item-row";
 
+                // Look up price
+                let priceHtml = '';
+                try {
+                    const products = getProducts();
+                    const productKey = fabric.split(' - ')[0]; // E.g., 'CHEMISE'
+                    const product = products[productKey];
+                    if (product && product.priceExWorks) {
+                        priceHtml = `<span class="unit-price" style="display:block; font-size:0.8rem; color:#666;">Price Ex-Works: $${product.priceExWorks}</span>`;
+                    }
+                } catch (e) { }
+
                 // IMPORTANT: We add 'onmousedown' directly here for the new buttons
                 // so they don't cause the page to flip either.
                 row.innerHTML = `
                     <img src="${data.img}" class="summary-mini-img">
                     <div class="summary-details">
                         <span class="summary-name">${fabric}</span>
+                        ${priceHtml}
                         <div class="summary-controls">
                             <button class="sm-btn" 
                                 onmousedown="event.stopPropagation()" 
@@ -231,6 +334,12 @@ document.addEventListener('DOMContentLoaded', async function () {
                                 onmousedown="event.stopPropagation()" 
                                 ontouchstart="event.stopPropagation()"
                                 onclick="updateQty(this, '${fabric}', 1)">+</button>
+
+                            <button class="sm-btn-remove" 
+                                onmousedown="event.stopPropagation()" 
+                                ontouchstart="event.stopPropagation()"
+                                onclick="removeFromCart('${fabric}')"
+                                title="Remove Item">×</button>
                         </div>
                     </div>
                 `;
@@ -246,9 +355,356 @@ document.addEventListener('DOMContentLoaded', async function () {
             totalRow.style.textAlign = "right";
             totalRow.style.borderTop = "2px solid #000";
             totalRow.style.paddingTop = "10px";
-            totalRow.innerHTML = `<strong>TOTAL: ${totalQty} UNITS</strong>`;
+            totalRow.innerHTML = `
+                <strong>TOTAL: ${totalQty} UNITS</strong>
+                <div style="margin-top: 10px;">
+                    <button class="submit-btn" style="background-color: #4CAF50; padding: 8px 15px; font-size: 0.7rem;" onclick="downloadPDF()">
+                        📥 Download Order PDF
+                    </button>
+                </div>
+            `;
             summaryBox.appendChild(totalRow);
         }
+    }
+
+    // --- 6. PDF DOWNLOAD LOGIC ---
+    window.downloadPDF = async function () {
+        if (!window.jspdf) {
+            alert("PDF Library (jsPDF) is not loaded. Please check your internet connection and refresh the page.");
+            console.error("window.jspdf is undefined");
+            return;
+        }
+
+        const { jsPDF } = window.jspdf;
+        if (!jsPDF) {
+            alert("PDF Library loaded but jsPDF constructor not found.");
+            return;
+        }
+
+        const doc = new jsPDF();
+
+        // Validate fields to highlight missing ones (but don't block download)
+        validateFormFields();
+
+        // Helper to load image as Base64
+        const loadImage = (src) => {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.crossOrigin = "Anonymous";
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    try {
+                        resolve(canvas.toDataURL('image/jpeg'));
+                    } catch (e) {
+                        console.warn("Canvas export failed", e);
+                        resolve(null);
+                    }
+                };
+                img.onerror = () => {
+                    console.warn("Image load failed", src);
+                    resolve(null);
+                };
+                img.src = src;
+            });
+        };
+
+        // Header
+        doc.setFontSize(20);
+        doc.text("Topolina Order Summary", 105, 20, null, null, "center");
+
+        doc.setFontSize(12);
+        const today = new Date().toLocaleDateString();
+        doc.text(`Date: ${today}`, 20, 30);
+
+        // Client Info (if filled)
+        const company = document.getElementById('company').value || "N/A";
+        const name = document.getElementById('name').value || "N/A";
+        doc.text(`Company: ${company}`, 20, 40);
+        doc.text(`Contact: ${name}`, 20, 46);
+
+        // Line
+        doc.line(20, 50, 190, 50);
+
+        // Table Header
+        let y = 60;
+        doc.setFontSize(10);
+        doc.text("Pattern", 20, y);       // New Column
+        doc.text("Product Info", 50, y); // Shifted
+        doc.text("Price EX-WORKS", 110, y);
+        doc.text("Total", 135, y);
+        doc.text("Qty", 160, y);
+
+        y += 5;
+        doc.line(20, y, 190, y);
+        y += 10;
+
+        // Items
+        let total = 0;
+        for (let [fabric, data] of Object.entries(cart)) {
+            if (data.qty > 0) {
+                // Check for page break
+                if (y > 270) {
+                    doc.addPage();
+                    y = 20;
+                }
+
+                // Add Image
+                if (data.img) {
+                    const imgData = await loadImage(data.img);
+                    if (imgData) {
+                        // x=20, y=y, w=20, h=20
+                        doc.addImage(imgData, 'JPEG', 20, y - 5, 20, 20);
+                    }
+                }
+
+                // Add Text
+                doc.text(fabric, 50, y + 5);
+
+                // Add Price
+                try {
+                    console.log(`Processing PDF item: ${fabric}`);
+                    const products = getProducts();
+                    const productKey = fabric.split(' - ')[0];
+                    const product = products[productKey];
+
+                    if (product && product.priceExWorks) {
+                        const unitPrice = parseFloat(product.priceExWorks);
+                        const lineTotal = unitPrice * data.qty;
+
+                        doc.text(`$${unitPrice.toFixed(2)}`, 110, y + 5);
+                        doc.text(`$${lineTotal.toFixed(2)}`, 135, y + 5);
+                    } else {
+                        doc.text("-", 110, y + 5);
+                        doc.text("-", 135, y + 5);
+                    }
+                } catch (e) {
+                    console.error("PDF Price Error", e);
+                    doc.text("-", 110, y + 5);
+                }
+
+                doc.text(String(data.qty), 160, y + 5);
+
+                total += data.qty;
+                y += 25; // More vertical space for images
+            }
+        }
+
+        // Final Line if we are not at bottom
+        if (y > 270) {
+            doc.addPage();
+            y = 20;
+        }
+
+        // Total
+        doc.line(20, y, 190, y);
+        y += 10;
+        doc.setFontSize(12);
+
+        // Calculate Grand Total
+        let grandTotal = 0;
+        try {
+            const products = getProducts();
+            for (let [fabric, data] of Object.entries(cart)) {
+                if (data.qty > 0) {
+                    const productKey = fabric.split(' - ')[0];
+                    const product = products[productKey];
+                    if (product && product.priceExWorks) {
+                        grandTotal += (parseFloat(product.priceExWorks) * data.qty);
+                    }
+                }
+            }
+        } catch (e) { console.error("Grand total calc error", e); }
+
+        doc.text(`GRAND TOTAL: $${grandTotal.toFixed(2)}`, 110, y);
+        doc.text(`TOTAL UNITS: ${total}`, 160, y);
+
+
+        // Footer
+        doc.setFontSize(10);
+        doc.text("Please email this summary to confirm your order.", 105, 285, null, null, "center");
+
+        // Check if we have items
+        let hasItems = false;
+        for (let [fabric, data] of Object.entries(cart)) {
+            if (data.qty > 0) hasItems = true;
+        }
+
+        // --- FORCE DOWNLOAD WITH CORRECT FILENAME ---
+        try {
+            const blob = doc.output('blob');
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "Topolina_Order.pdf";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error("Blob download failed, falling back to doc.save", err);
+            doc.save("Topolina_Order.pdf");
+        }
+    };
+
+
+    // New Function to Remove Item
+    window.removeFromCart = function (fabricName) {
+        if (cart[fabricName]) {
+            delete cart[fabricName];
+        }
+
+        localStorage.setItem('topolina_cart', JSON.stringify(cart));
+        syncAllVisuals();
+    };
+
+
+
+
+    // --- 5. ZOOM / LIGHTBOX LOGIC ---
+
+    // --- 5. ENHANCED LIGHTBOX LOGIC ---
+    let currentLightboxItem = null; // { productKey, patternId, cartKey }
+
+    window.openPatternLightbox = function (productKey, patternId) {
+        const products = getProducts();
+        const product = products[productKey];
+        if (!product) return;
+
+        const pattern = product.patterns.find(p => p.id === patternId);
+        if (!pattern) return;
+
+        // 1. Details
+        currentLightboxItem = {
+            productKey,
+            patternId,
+            cartKey: `${productKey} - ${pattern.id}` // Must match format in dynamic-pages.js
+        };
+
+        const modal = document.getElementById("patternLightbox");
+        document.getElementById("lb-pattern-img").src = pattern.image;
+        document.getElementById("lb-pattern-name").innerText = pattern.name;
+        document.getElementById("lb-pattern-id").innerText = `ID: ${pattern.id}`;
+
+        // 2. Stock Logic (Reuse logic from updateQty)
+        updateLightboxStockDisplay(product, pattern);
+
+        // 3. Current Cart Quantity
+        const currentQty = cart[currentLightboxItem.cartKey] ? cart[currentLightboxItem.cartKey].qty : 0;
+        updateLightboxQtyDisplay(currentQty);
+
+        // 4. Show Modal
+        modal.style.display = "block";
+    };
+
+    function updateLightboxStockDisplay(product, pattern) {
+        const statusEl = document.getElementById("lb-stock-status");
+        const detailEl = document.getElementById("lb-stock-detail");
+
+        statusEl.className = ""; // Reset classes
+
+        const stockType = pattern.stockType || 'meters';
+        let isAvailable = true;
+        let message = "";
+        let details = "";
+
+        if (stockType === 'quantity') {
+            // Unit Stock
+            const qty = pattern.availableQuantity !== undefined ? pattern.availableQuantity : 0;
+            if (qty <= 0) {
+                statusEl.innerText = "OUT OF STOCK";
+                statusEl.classList.add("status-out-of-stock");
+                isAvailable = false;
+            } else if (qty < 10) {
+                statusEl.innerText = "LOW STOCK";
+                statusEl.classList.add("status-low-stock");
+                details = `Only ${qty} units available`;
+            } else {
+                statusEl.innerText = "IN STOCK";
+                statusEl.classList.add("status-in-stock");
+                details = `${qty} units ready to ship`;
+            }
+        } else {
+            // Fabric Meters
+            const meters = pattern.availableMeters !== undefined ? pattern.availableMeters : 0;
+            if (meters <= 0) {
+                statusEl.innerText = "OUT OF STOCK";
+                statusEl.classList.add("status-out-of-stock");
+                isAvailable = false;
+            } else if (meters < 20) {
+                statusEl.innerText = "LOW STOCK";
+                statusEl.classList.add("status-low-stock");
+                details = `Only ${meters.toFixed(1)}m fabric remaining`;
+            } else {
+                statusEl.innerText = "IN STOCK";
+                statusEl.classList.add("status-in-stock");
+                details = `${meters.toFixed(1)}m fabric available`;
+            }
+        }
+
+        detailEl.innerText = details;
+
+        // Disable buttons if out of stock
+        document.getElementById('lb-qty-plus').disabled = !isAvailable;
+        document.getElementById('lb-qty-minus').disabled = !isAvailable;
+    }
+
+    function updateLightboxQtyDisplay(qty) {
+        document.getElementById("lb-qty-val").innerText = qty;
+    }
+
+    // Lightbox Controls
+    document.getElementById('lb-qty-plus').onclick = function () {
+        if (!currentLightboxItem) return;
+        // Reuse global updateQty
+        // Logic: updateQty(btn, fabricName, change)
+        // We pass 'null' as btn because we're not in the grid, but updateQty handles it fine (just won't find image from DOM, looks in cart)
+        // Wait! updateQty needs to find the image URL if it's new.
+        // Let's manually ensure cart has image if it's 0.
+
+        // Use cart key
+        const cartKey = currentLightboxItem.cartKey;
+
+        // Pre-fill image if needed so updateQty doesn't fail to find it
+        if (!cart[cartKey]) {
+            const imgSrc = document.getElementById("lb-pattern-img").src;
+            cart[cartKey] = { qty: 0, img: imgSrc };
+        }
+
+        // Call standard update
+        updateQty(null, cartKey, 1);
+
+        // Update our display
+        updateLightboxQtyDisplay(cart[cartKey].qty);
+    };
+
+    document.getElementById('lb-qty-minus').onclick = function () {
+        if (!currentLightboxItem) return;
+        const cartKey = currentLightboxItem.cartKey;
+
+        // Call standard update
+        updateQty(null, cartKey, -1);
+
+        // Update our display
+        const newQty = cart[cartKey] ? cart[cartKey].qty : 0;
+        updateLightboxQtyDisplay(newQty);
+    };
+
+    // Close Lightbox
+    const lbModal = document.getElementById("patternLightbox");
+    const lbClose = document.querySelector("#patternLightbox .lightbox-close");
+
+    if (lbClose) {
+        lbClose.onclick = () => { lbModal.style.display = "none"; };
+    }
+
+    if (lbModal) {
+        lbModal.onclick = (e) => {
+            if (e.target === lbModal) lbModal.style.display = "none";
+        };
     }
 
     // --- 4. SEND EMAIL LOGIC ---
@@ -271,7 +727,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         const notes = document.getElementById('notes').value;
 
         // Validation - Check required fields
-        if (!company || !name || !email || !phone || !streetAddress || !city || !postalCode || !country) {
+        if (!validateFormFields()) {
             alert(t('msg.fillRequired'));
             return;
         }
@@ -371,23 +827,28 @@ document.addEventListener('DOMContentLoaded', async function () {
         };
 
         // Submit to API
-        fetch('/api/orders', {
+        fetch('api/orders', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(order)
         })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
+            .then(async response => {
+                const data = await response.json();
+
+                if (response.ok && data.success) {
                     alert(t('msg.orderSuccess'));
-                    // Optional: Clear cart
+
+                    // Clear cart
+                    localStorage.removeItem('topolina_cart');
                     cart = {};
-                    syncAllVisuals();
-                    // Flip to Summary or Cover?
+
+                    // Refresh to show updated stock and clear UI
+                    window.location.reload();
                 } else {
-                    alert('Error placing order: ' + (data.error || 'Unknown error'));
+                    // Show error message from server (e.g., insufficient stock)
+                    alert(data.error || 'Error placing order');
                 }
             })
             .catch(error => {
@@ -395,4 +856,38 @@ document.addEventListener('DOMContentLoaded', async function () {
                 alert('Network error. Please try again.');
             });
     };
+
+    // --- 7. HELPER: FORM VALIDATION ---
+    function validateFormFields() {
+        const requiredIds = [
+            'company', 'name', 'email', 'phone',
+            'streetAddress', 'city', 'postalCode', 'country'
+        ];
+
+        let isValid = true;
+
+        requiredIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+
+            // Remove error on input if not already bound
+            if (!el.hasAttribute('data-validation-bound')) {
+                el.addEventListener('input', () => {
+                    if (el.value.trim() !== '') {
+                        el.classList.remove('input-error');
+                    }
+                });
+                el.setAttribute('data-validation-bound', 'true');
+            }
+
+            if (el.value.trim() === '') {
+                el.classList.add('input-error');
+                isValid = false;
+            } else {
+                el.classList.remove('input-error');
+            }
+        });
+
+        return isValid;
+    }
 });

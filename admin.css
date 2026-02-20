@@ -1,3 +1,63 @@
+:root {
+    --bg-body: #ffffff;
+    --bg-card: #ffffff;
+    --bg-secondary: #f9f9f9;
+    --text-main: #000000;
+    --text-muted: #666666;
+    --text-inverse: #ffffff;
+    --border-main: #000000;
+    --border-light: #e0e0e0;
+
+    /* Components */
+    --bg-header: #000000;
+    --btn-primary-bg: #000000;
+    --btn-primary-text: #ffffff;
+    --btn-secondary-bg: #ffffff;
+    --btn-secondary-text: #000000;
+}
+
+[data-theme="dark"] {
+    --bg-body: #111111;
+    --bg-card: #1e1e1e;
+    --bg-secondary: #2d2d2d;
+    --text-main: #e0e0e0;
+    --text-muted: #aaaaaa;
+    --text-inverse: #000000;
+    --border-main: #444444;
+    --border-light: #333333;
+
+    /* Components */
+    --bg-header: #000000;
+    --btn-primary-bg: #f0f0f0;
+    --btn-primary-text: #000000;
+    --btn-secondary-bg: #2d2d2d;
+    --btn-secondary-text: #e0e0e0;
+}
+
+/* Dark Mode Overrides for Inputs */
+[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+    background-color: var(--bg-card);
+    color: var(--text-main);
+    border-color: var(--border-main);
+}
+
+[data-theme="dark"] input:focus,
+[data-theme="dark"] select:focus,
+[data-theme="dark"] textarea:focus {
+    background-color: var(--bg-secondary);
+    border-color: #777;
+}
+
+[data-theme="dark"] input:disabled {
+    background-color: #333;
+    /* Darker background for disabled */
+    color: #888;
+    /* Dimmer text */
+    border-color: #333;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -6,8 +66,8 @@
 
 body {
     font-family: 'Roboto', sans-serif;
-    background: #ffffff;
-    color: #000000;
+    background: var(--bg-body);
+    color: var(--text-main);
     min-height: 100vh;
 }
 
@@ -21,8 +81,8 @@ body {
 }
 
 .login-box {
-    background: #ffffff;
-    border: 2px solid #000000;
+    background: var(--bg-card);
+    border: 2px solid var(--border-main);
     border-radius: 0;
     padding: 60px 40px;
     width: 100%;
@@ -35,13 +95,13 @@ body {
     font-family: 'Playfair Display', serif;
     font-size: 2.5rem;
     margin-bottom: 10px;
-    color: #000000;
+    color: var(--text-main);
 }
 
 .login-box h2 {
     font-size: 1.2rem;
     font-weight: 300;
-    color: #666666;
+    color: var(--text-muted);
     margin-bottom: 40px;
 }
 
@@ -54,26 +114,33 @@ body {
     display: block;
     margin-bottom: 8px;
     font-size: 0.9rem;
-    color: #333333;
+    color: var(--text-main);
     text-transform: uppercase;
     letter-spacing: 1px;
 }
 
-.form-group input {
+.form-group input,
+.form-group select {
     width: 100%;
     padding: 12px 15px;
-    background: #ffffff;
-    border: 2px solid #000000;
+    background: var(--bg-card);
+    border: 2px solid var(--border-main);
     border-radius: 0;
-    color: #000000;
+    color: var(--text-main);
     font-size: 1rem;
     transition: all 0.3s ease;
 }
 
-.form-group input:focus {
+.form-group input:focus,
+.form-group select:focus {
     outline: none;
     border-color: #000000;
-    background: #f9f9f9;
+    background: var(--bg-secondary);
+}
+
+option {
+    background: var(--bg-card);
+    color: var(--text-main);
 }
 
 .error-message {
@@ -89,7 +156,7 @@ body {
 .btn-danger,
 .btn-success {
     padding: 12px 24px;
-    border: 2px solid #000000;
+    border: 2px solid var(--border-main);
     border-radius: 0;
     font-size: 1rem;
     font-weight: 500;
@@ -100,19 +167,20 @@ body {
 }
 
 .btn-primary {
-    background: #000000;
-    color: #ffffff;
+    background: var(--btn-primary-bg);
+    color: var(--btn-primary-text);
     width: 100%;
 }
 
 .btn-primary:hover {
     background: #333333;
+    /* Make this standard or opacity? Keep hardcoded for now or use var */
 }
 
 .btn-secondary {
-    background: #ffffff;
-    color: #000000;
-    border: 2px solid #000000;
+    background: var(--btn-secondary-bg);
+    color: var(--btn-secondary-text);
+    border: 2px solid var(--border-main);
 }
 
 .btn-secondary:hover {
@@ -120,8 +188,8 @@ body {
 }
 
 .btn-danger {
-    background: #000000;
-    color: #ffffff;
+    background: var(--btn-primary-bg);
+    color: var(--btn-primary-text);
     padding: 8px 16px;
     font-size: 0.85rem;
 }
@@ -131,8 +199,8 @@ body {
 }
 
 .btn-success {
-    background: #000000;
-    color: #ffffff;
+    background: var(--btn-primary-bg);
+    color: var(--btn-primary-text);
     padding: 8px 16px;
     font-size: 0.85rem;
 }
@@ -149,8 +217,8 @@ body {
 }
 
 .dashboard-header {
-    background: #000000;
-    border-bottom: 2px solid #000000;
+    background: var(--bg-header);
+    border-bottom: 2px solid var(--bg-header);
     padding: 20px 40px;
 }
 
@@ -165,7 +233,8 @@ body {
 .header-content h1 {
     font-family: 'Playfair Display', serif;
     font-size: 1.8rem;
-    color: #ffffff;
+    color: var(--btn-primary-text);
+    /* Keep white on black header */
 }
 
 .dashboard-main {
@@ -174,7 +243,7 @@ body {
     max-width: 1400px;
     margin: 0 auto;
     width: 100%;
-    background: #ffffff;
+    background: var(--bg-body);
 }
 
 .controls-bar {
@@ -193,10 +262,10 @@ body {
 
 .filter-btn {
     padding: 10px 20px;
-    background: #ffffff;
-    border: 2px solid #000000;
+    background: var(--bg-card);
+    border: 2px solid var(--border-main);
     border-radius: 0;
-    color: #000000;
+    color: var(--text-main);
     cursor: pointer;
     transition: all 0.3s ease;
     font-size: 0.9rem;
@@ -207,8 +276,8 @@ body {
 }
 
 .filter-btn.active {
-    background: #000000;
-    color: #ffffff;
+    background: var(--btn-primary-bg);
+    color: var(--btn-primary-text);
     border-color: #000000;
 }
 
@@ -219,18 +288,18 @@ body {
 
 .stat-item {
     font-size: 0.9rem;
-    color: #333333;
+    color: var(--text-main);
 }
 
 .stat-item strong {
-    color: #000000;
+    color: var(--text-main);
     font-size: 1.1rem;
 }
 
 /* Orders Container */
 .orders-container {
-    background: #ffffff;
-    border: 2px solid #000000;
+    background: var(--bg-card);
+    border: 2px solid var(--border-main);
     border-radius: 0;
     padding: 20px;
     min-height: 400px;
@@ -238,14 +307,14 @@ body {
 
 .no-orders {
     text-align: center;
-    color: #666666;
+    color: var(--text-muted);
     padding: 60px 20px;
     font-size: 1.1rem;
 }
 
 .order-card {
-    background: #ffffff;
-    border: 2px solid #000000;
+    background: var(--bg-card);
+    border: 2px solid var(--border-main);
     border-radius: 0;
     padding: 20px;
     margin-bottom: 15px;
@@ -269,12 +338,12 @@ body {
 .order-info h3 {
     font-size: 1.2rem;
     margin-bottom: 5px;
-    color: #000000;
+    color: var(--text-main);
 }
 
 .order-meta {
     font-size: 0.85rem;
-    color: #666666;
+    color: var(--text-muted);
     margin-bottom: 3px;
 }
 
@@ -288,15 +357,15 @@ body {
 }
 
 .status-pending {
-    background: #ffffff;
-    color: #000000;
-    border: 2px solid #000000;
+    background: var(--bg-card);
+    color: var(--text-main);
+    border: 2px solid var(--border-main);
 }
 
 .status-confirmed {
-    background: #000000;
-    color: #ffffff;
-    border: 2px solid #000000;
+    background: var(--btn-primary-bg);
+    color: var(--btn-primary-text);
+    border: 2px solid var(--border-main);
 }
 
 .order-details {
@@ -309,7 +378,7 @@ body {
 
 .order-details h4 {
     font-size: 0.9rem;
-    color: #333333;
+    color: var(--text-main);
     margin-bottom: 10px;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -324,11 +393,11 @@ body {
 
 .pattern-item {
     padding: 8px 12px;
-    background: #ffffff;
-    border: 1px solid #000000;
+    background: var(--bg-card);
+    border: 1px solid var(--border-main);
     border-radius: 0;
     font-size: 0.85rem;
-    color: #000000;
+    color: var(--text-main);
 }
 
 .order-actions {
@@ -336,6 +405,112 @@ body {
     gap: 10px;
     margin-top: 15px;
     flex-wrap: wrap;
+}
+
+/* Inventory & Consumption Boxes */
+.inventory-note {
+    background: #eef;
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid #ccd;
+    color: #000;
+}
+
+.consumption-info {
+    background: #e8f5e9;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #c8e6c9;
+    color: #000;
+}
+
+.consumption-warning {
+    background: #fff3e0;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ffcc80;
+    color: #000;
+}
+
+[data-theme="dark"] .inventory-note {
+    background: #2d3748;
+    border-color: #4a5568;
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .consumption-info {
+    background: #064025;
+    /* Dark Green */
+    border-color: #2f855a;
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .consumption-warning {
+    background: #5c3a00;
+    /* Dark Orange/Brown */
+    border-color: #b7791f;
+    color: #e2e8f0;
+}
+
+/* Order Management Styles */
+.order-details-full {
+    /* No default background needed as it inherits from modal */
+}
+
+.order-info-group {
+    background: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 0;
+}
+
+.order-item-card {
+    background: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    /* Changed from black border to gray for consistency */
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    border-radius: 0;
+}
+
+/* Text Colors */
+.text-main {
+    color: #000000;
+}
+
+.text-secondary {
+    color: #333333;
+}
+
+.text-muted {
+    color: #666666;
+}
+
+/* Dark Mode Overrides for Order Management */
+[data-theme="dark"] .order-info-group,
+[data-theme="dark"] .order-item-card {
+    background: #2d3748;
+    border-color: #4a5568;
+}
+
+[data-theme="dark"] .text-main {
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .text-secondary {
+    color: #cbd5e0;
+}
+
+[data-theme="dark"] .text-muted {
+    color: #a0aec0;
+}
+
+[data-theme="dark"] .order-item-card img {
+    border-color: #4a5568;
+    opacity: 0.9;
 }
 
 /* Modal */
@@ -357,13 +532,15 @@ body {
 }
 
 .modal-content {
-    background: #ffffff;
-    border: 2px solid #000000;
+    background: var(--bg-card);
+    border: 2px solid var(--border-main);
     border-radius: 0;
     padding: 30px;
     max-width: 500px;
     width: 90%;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 .modal-large {
@@ -375,14 +552,14 @@ body {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
-    border-bottom: 2px solid #000000;
+    border-bottom: 2px solid var(--border-main);
     padding-bottom: 10px;
 }
 
 .modal-close {
     background: none;
     border: none;
-    color: #000000;
+    color: var(--text-main);
     font-size: 2rem;
     cursor: pointer;
     padding: 0;
@@ -395,17 +572,17 @@ body {
 }
 
 .modal-close:hover {
-    color: #666666;
+    color: var(--text-muted);
 }
 
 .modal-content h3 {
     margin-bottom: 15px;
-    color: #000000;
+    color: var(--text-main);
 }
 
 .modal-content p {
     margin-bottom: 25px;
-    color: #333333;
+    color: var(--text-main);
     line-height: 1.6;
 }
 
@@ -456,19 +633,19 @@ body {
 .tab-navigation {
     display: flex;
     gap: 0;
-    background: #f0f0f0;
-    border-bottom: 2px solid #000000;
+    background: var(--bg-secondary);
+    border-bottom: 2px solid var(--border-main);
     padding: 0 40px;
 }
 
 .tab-btn {
     padding: 15px 30px;
-    background: #f0f0f0;
+    background: var(--bg-secondary);
     border: none;
     border-top: 2px solid transparent;
     border-left: 2px solid transparent;
     border-right: 2px solid transparent;
-    color: #666666;
+    color: var(--text-muted);
     cursor: pointer;
     transition: all 0.3s ease;
     font-size: 1rem;
@@ -476,13 +653,13 @@ body {
 }
 
 .tab-btn:hover {
-    background: #e0e0e0;
-    color: #000000;
+    background: var(--border-light);
+    color: var(--text-main);
 }
 
 .tab-btn.active {
-    background: #ffffff;
-    color: #000000;
+    background: var(--bg-card);
+    color: var(--text-main);
     border-top: 2px solid #000000;
     border-left: 2px solid #000000;
     border-right: 2px solid #000000;
@@ -501,10 +678,10 @@ body {
 /* Product Management */
 .product-selector {
     padding: 10px 20px;
-    background: #ffffff;
-    border: 2px solid #000000;
+    background: var(--bg-card);
+    border: 2px solid var(--border-main);
     border-radius: 0;
-    color: #000000;
+    color: var(--text-main);
     font-size: 1rem;
     cursor: pointer;
     min-width: 300px;
@@ -512,12 +689,17 @@ body {
 
 .product-selector:focus {
     outline: none;
-    background: #f9f9f9;
+    background: var(--bg-secondary);
+}
+
+.product-selector option {
+    background: var(--bg-card);
+    color: var(--text-main);
 }
 
 .product-editor {
-    background: #ffffff;
-    border: 2px solid #000000;
+    background: var(--bg-card);
+    border: 2px solid var(--border-main);
     border-radius: 0;
     padding: 30px;
     min-height: 500px;
@@ -529,18 +711,18 @@ body {
     align-items: center;
     margin-bottom: 30px;
     padding-bottom: 20px;
-    border-bottom: 2px solid #000000;
+    border-bottom: 2px solid var(--border-main);
 }
 
 .product-header h2 {
     font-family: 'Playfair Display', serif;
     font-size: 2rem;
-    color: #000000;
+    color: var(--text-main);
 }
 
 .product-info-section {
-    background: #f9f9f9;
-    border: 2px solid #000000;
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-main);
     padding: 20px;
     margin-bottom: 30px;
 }
@@ -548,7 +730,7 @@ body {
 .product-info-section h3 {
     font-size: 1.2rem;
     margin-bottom: 15px;
-    color: #000000;
+    color: var(--text-main);
     text-transform: uppercase;
     letter-spacing: 1px;
 }
@@ -567,7 +749,7 @@ body {
 
 .form-field label {
     font-size: 0.85rem;
-    color: #333333;
+    color: var(--text-main);
     margin-bottom: 8px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -576,16 +758,16 @@ body {
 
 .form-field input {
     padding: 10px 15px;
-    background: #ffffff;
-    border: 2px solid #000000;
+    background: var(--bg-card);
+    border: 2px solid var(--border-main);
     border-radius: 0;
-    color: #000000;
+    color: var(--text-main);
     font-size: 1rem;
 }
 
 .form-field input:focus {
     outline: none;
-    background: #ffffff;
+    background: var(--bg-card);
     border-color: #333333;
 }
 
@@ -596,7 +778,7 @@ body {
 .patterns-section h3 {
     font-size: 1.2rem;
     margin-bottom: 20px;
-    color: #000000;
+    color: var(--text-main);
     text-transform: uppercase;
     letter-spacing: 1px;
     display: flex;
@@ -604,11 +786,115 @@ body {
     align-items: center;
 }
 
+/* --- MOBILE RESPONSIVENESS for ADMIN --- */
+@media (max-width: 768px) {
+
+    /* Login */
+    .login-box {
+        padding: 30px 20px;
+        width: 100%;
+        border: none;
+        box-shadow: none;
+    }
+
+    /* Dashboard Header */
+    .dashboard-header {
+        padding: 15px;
+    }
+
+    .header-content {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+
+    /* Tabs */
+    .tab-navigation {
+        padding: 0;
+        flex-wrap: wrap;
+    }
+
+    .tab-btn {
+        flex: 1;
+        padding: 12px;
+        font-size: 0.9rem;
+        text-align: center;
+    }
+
+    /* Controls & Stats */
+    .controls-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .stats {
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .filter-group {
+        overflow-x: auto;
+        padding-bottom: 5px;
+    }
+
+    /* Orders List */
+    .order-card {
+        padding: 15px;
+    }
+
+    .order-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .order-actions {
+        width: 100%;
+    }
+
+    .order-actions button {
+        flex: 1;
+    }
+
+    /* Product Editor (Fabrics) */
+    .product-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .product-header h2 {
+        font-size: 1.5rem;
+    }
+
+    .product-header div {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        gap: 10px;
+    }
+
+    .product-header button {
+        width: 100% !important;
+    }
+
+    /* Fabric Grid in Admin */
+    .fabric-list {
+        grid-template-columns: 1fr 1fr;
+        /* 2 cols on mobile */
+    }
+
+    .dashboard-main {
+        padding: 15px;
+    }
+}
+
 .btn-add-pattern {
     padding: 8px 16px;
-    background: #000000;
-    color: #ffffff;
-    border: 2px solid #000000;
+    background: var(--btn-primary-bg);
+    color: var(--btn-primary-text);
+    border: 2px solid var(--border-main);
     border-radius: 0;
     cursor: pointer;
     font-size: 0.85rem;
@@ -629,8 +915,8 @@ body {
 }
 
 .pattern-card {
-    background: #ffffff;
-    border: 2px solid #000000;
+    background: var(--bg-card);
+    border: 2px solid var(--border-main);
     border-radius: 0;
     padding: 15px;
     transition: all 0.3s ease;
@@ -643,8 +929,8 @@ body {
 .pattern-image-container {
     width: 100%;
     height: 180px;
-    background: #f0f0f0;
-    border: 2px solid #000000;
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-main);
     margin-bottom: 15px;
     display: flex;
     align-items: center;
@@ -672,17 +958,17 @@ body {
 .pattern-info input {
     width: 100%;
     padding: 8px 12px;
-    background: #ffffff;
-    border: 2px solid #000000;
+    background: var(--bg-card);
+    border: 2px solid var(--border-main);
     border-radius: 0;
-    color: #000000;
+    color: var(--text-main);
     font-size: 0.9rem;
     margin-bottom: 8px;
 }
 
 .pattern-info input:focus {
     outline: none;
-    background: #f9f9f9;
+    background: var(--bg-secondary);
 }
 
 .pattern-actions {
@@ -693,7 +979,7 @@ body {
 .btn-small {
     flex: 1;
     padding: 6px 12px;
-    border: 2px solid #000000;
+    border: 2px solid var(--border-main);
     border-radius: 0;
     cursor: pointer;
     font-size: 0.8rem;
@@ -703,17 +989,17 @@ body {
 }
 
 .btn-change-image {
-    background: #ffffff;
-    color: #000000;
+    background: var(--bg-card);
+    color: var(--text-main);
 }
 
 .btn-change-image:hover {
-    background: #f0f0f0;
+    background: var(--bg-secondary);
 }
 
 .btn-delete-pattern {
-    background: #000000;
-    color: #ffffff;
+    background: var(--btn-primary-bg);
+    color: var(--btn-primary-text);
 }
 
 .btn-delete-pattern:hover {
@@ -721,22 +1007,22 @@ body {
 }
 
 .btn-view {
-    background: #ffffff;
-    color: #000000;
+    background: var(--bg-card);
+    color: var(--text-main);
     padding: 8px 16px;
     font-size: 0.85rem;
 }
 
 .btn-view:hover {
-    background: #f0f0f0;
+    background: var(--bg-secondary);
 }
 
 .save-product-btn {
     margin-top: 30px;
     padding: 15px 40px;
-    background: #000000;
-    color: #ffffff;
-    border: 2px solid #000000;
+    background: var(--btn-primary-bg);
+    color: var(--btn-primary-text);
+    border: 2px solid var(--border-main);
     border-radius: 0;
     cursor: pointer;
     font-size: 1rem;
@@ -758,9 +1044,9 @@ input[type="file"] {
 .file-upload-label {
     display: inline-block;
     padding: 8px 16px;
-    background: #ffffff;
-    color: #000000;
-    border: 2px solid #000000;
+    background: var(--bg-card);
+    color: var(--text-main);
+    border: 2px solid var(--border-main);
     border-radius: 0;
     cursor: pointer;
     font-size: 0.85rem;
@@ -770,13 +1056,13 @@ input[type="file"] {
 }
 
 .file-upload-label:hover {
-    background: #f0f0f0;
+    background: var(--bg-secondary);
 }
 
 /* Image Management Styles */
 .image-section {
-    background: #f9f9f9;
-    border: 2px solid #000000;
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-main);
     padding: 25px;
     margin-bottom: 25px;
 }
@@ -784,10 +1070,11 @@ input[type="file"] {
 .image-section h3 {
     font-size: 1.1rem;
     margin-bottom: 20px;
-    color: #000000;
+    color: var(--text-main);
     text-transform: uppercase;
     letter-spacing: 1px;
-    border-bottom: 2px solid #000000;
+    letter-spacing: 1px;
+    border-bottom: 2px solid var(--border-main);
     padding-bottom: 10px;
 }
 
@@ -805,8 +1092,8 @@ input[type="file"] {
 .image-preview {
     width: 100%;
     height: 300px;
-    background: #ffffff;
-    border: 2px solid #000000;
+    background: var(--bg-card);
+    border: 2px solid var(--border-main);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -833,20 +1120,20 @@ input[type="file"] {
 }
 
 .image-info {
-    background: #ffffff;
+    background: var(--bg-card);
     padding: 15px;
-    border: 2px solid #000000;
+    border: 2px solid var(--border-main);
     margin-bottom: 10px;
 }
 
 .image-info p {
     margin: 5px 0;
     font-size: 0.9rem;
-    color: #333333;
+    color: var(--text-main);
 }
 
 .image-info strong {
-    color: #000000;
+    color: var(--text-main);
 }
 
 .shop-images-grid {
@@ -857,23 +1144,23 @@ input[type="file"] {
 }
 
 .shop-image-card {
-    background: #ffffff;
-    border: 2px solid #000000;
+    background: var(--bg-card);
+    border: 2px solid var(--border-main);
     padding: 15px;
 }
 
 .shop-image-card h4 {
     font-size: 0.95rem;
     margin-bottom: 15px;
-    color: #000000;
+    color: var(--text-main);
     text-transform: uppercase;
 }
 
 .shop-image-preview {
     width: 100%;
     height: 200px;
-    background: #f0f0f0;
-    border: 2px solid #000000;
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-main);
     display: flex;
     align-items: center;
     justify-content: center;

@@ -26,22 +26,55 @@ async function generateProductPages() {
     let currentPageNumber = 2; // Start after cover (page 1)
     window.productNavigationMap = {}; // Store product -> sketch page mapping
 
+    // Define explicit product order
+    const PRODUCT_ORDER = [
+        'CHEMISE', 'PONTALON', 'SANT MANCH', 'JUPE',
+        'MANTEAU DROIT', 'ROBE ESABEL', 'TOP ESABEL',
+        'MANTEAU 3/4', 'MANTEAU LONG', 'VEST', 'ROBE LONG',
+        'BAG', 'BONNET'
+    ];
+
+    const getOrderedProducts = (products) => {
+        const ordered = [];
+        PRODUCT_ORDER.forEach(key => {
+            if (products[key]) ordered.push([key, products[key]]);
+        });
+        Object.entries(products).forEach(([key, val]) => {
+            if (!PRODUCT_ORDER.includes(key)) ordered.push([key, val]);
+        });
+        return ordered;
+    };
+
     // Generate pages for each product
-    Object.entries(products).forEach(([productKey, productData]) => {
+    getOrderedProducts(products).forEach(([productKey, productData]) => {
         // Create cover page for product
         const coverPageEl = createProductCoverPage(productData);
         insertAfter.after(coverPageEl);
         insertAfter = coverPageEl;
         currentPageNumber++;
 
-        // Create sketch page for product - THIS IS WHERE NAVIGATION SHOULD GO
-        const sketchPageEl = createProductSketchPage(productData);
-        insertAfter.after(sketchPageEl);
-        insertAfter = sketchPageEl;
+        // Create sketch page for product (only if it exists)
+        if (productData.sketchImage) {
+            const sketchPageEl = createProductSketchPage(productData);
+            insertAfter.after(sketchPageEl);
+            insertAfter = sketchPageEl;
 
-        // Store the sketch page number for navigation
-        window.productNavigationMap[productKey] = currentPageNumber;
-        currentPageNumber++;
+            // Store the sketch page number for navigation
+            // If sketch exists, nav goes there
+            window.productNavigationMap[productKey] = currentPageNumber;
+            currentPageNumber++;
+        } else {
+            // If no sketch, nav goes to first pattern page (which will be next)
+            // But wait, the pattern page is created next. 
+            // Actually, the logic below adds pattern pages. 
+            // So if no sketch, the "start" of the product is the Cover Page? 
+            // Or the first pattern page?
+            // Flipbook convention: Navigation usually points to the "open" spread.
+            // If Cover is page X, Sketch is X+1.
+            // If no Sketch, Pattern 1 is X+1.
+            // So we want to point to currentPageNumber (which is the next page index).
+            window.productNavigationMap[productKey] = currentPageNumber;
+        }
 
         // Create pattern pages for product
         const patternPages = createProductPatternPages(productKey, productData);
@@ -61,7 +94,8 @@ async function generateProductPages() {
     });
 
     // Update navigation links
-    updateNavigationLinks();
+    // Generate navigation links dynamically
+    generateNavigationLinks();
 }
 
 function createProductCoverPage(productData) {
@@ -159,27 +193,32 @@ function createPatternHTML(productKey, pattern) {
             // If required is known, strict check.
             if (meters <= 0 || (required > 0 && meters < required)) {
                 isOutOfStock = true;
-                // stockMessage = 'INSUFFICIENT FABRIC'; 
-                stockMessage = 'OUT OF STOCK'; // Keep it simple for client
+                stockMessage = 'SOLD OUT';
             }
         }
     }
 
-    const disabledAttr = isOutOfStock ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : '';
-    const opacityStyle = isOutOfStock ? 'opacity: 0.6;' : '';
-    const overlay = isOutOfStock ?
-        `<div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.7); display: flex; align-items: center; justify-content: center; font-weight: bold; color: #d32f2f; font-size: 0.9rem; text-align: center; border: 1px solid #d32f2f;">${stockMessage}</div>`
-        : '';
+    // New styled approach
+    const itemClass = isOutOfStock ? 'fabric-item out-of-stock' : 'fabric-item';
+    const overlay = isOutOfStock ? `<div class="out-of-stock-overlay">${stockMessage}</div>` : '';
+
+    // Disable interactions if out of stock
+    const clickAction = isOutOfStock ? '' : `onclick="event.stopPropagation(); openPatternLightbox('${productKey}', '${pattern.id}')"`;
+    const cursorStyle = isOutOfStock ? 'cursor: not-allowed' : 'cursor: pointer';
 
     return `
-            <div class="fabric-item" data-cart-key="${cartKey}" style="position: relative; ${opacityStyle}">
+            <div class="${itemClass}" data-cart-key="${cartKey}" style="position: relative;">
                 ${overlay}
-                <img src="${pattern.image}" class="swatch-img" ${borderStyle} alt="${pattern.name}">
+                <img src="${pattern.image}" class="swatch-img" ${borderStyle} alt="${pattern.name}" 
+                     ${clickAction}
+                     onmousedown="event.stopPropagation()"
+                     ontouchstart="event.stopPropagation()"
+                     style="${cursorStyle}">
                 <div class="fabric-name" style="display: none;">${pattern.name}</div>
                 <div class="qty-selector">
-                    <button class="qty-btn" onclick="updateQty(this, '${cartKey}', -1)" ${disabledAttr}>-</button>
+                    <button class="qty-btn" onclick="updateQty(this, '${cartKey}', -1)" ${isOutOfStock ? 'disabled' : ''}>-</button>
                     <span class="qty-val">0</span>
-                    <button class="qty-btn" onclick="updateQty(this, '${cartKey}', 1)" ${disabledAttr}>+</button>
+                    <button class="qty-btn" onclick="updateQty(this, '${cartKey}', 1)" ${isOutOfStock ? 'disabled' : ''}>+</button>
                 </div>
             </div>
         `;
@@ -195,9 +234,9 @@ function createShopPage(productKey) {
         const page = document.createElement('div');
         page.className = 'page dynamic-product-page';
         page.innerHTML = `
-            <div class="page-content no-padding">
-                <img src="${product.shopImage}" class="full-page-img" alt="Shop">
-            </div>
+        <div class="page-content no-padding">
+            <img src="${product.shopImage}" class="full-page-img" alt="Shop">
+        </div>
         `;
         return page;
     }
@@ -220,9 +259,9 @@ function createShopPage(productKey) {
         const page = document.createElement('div');
         page.className = 'page dynamic-product-page';
         page.innerHTML = `
-            <div class="page-content no-padding">
-                <img src="${shopImages[productKey]}" class="full-page-img" alt="Shop">
-            </div>
+        <div class="page-content no-padding">
+            <img src="${shopImages[productKey]}" class="full-page-img" alt="Shop">
+        </div>
         `;
         return page;
     }
@@ -260,7 +299,7 @@ function reloadFlipbook() {
         // Add new page number
         const pageNum = index + 1;
         const numberDiv = document.createElement('div');
-        numberDiv.className = `page-number ${pageNum % 2 === 0 ? 'left' : 'right'}`;
+        numberDiv.className = `page - number ${pageNum % 2 === 0 ? 'left' : 'right'} `;
         numberDiv.innerText = pageNum;
         page.appendChild(numberDiv);
     });
@@ -307,32 +346,65 @@ function attachEventProtection() {
     }
 }
 
-// Update navigation links to point to sketch pages
-function updateNavigationLinks() {
-    if (!window.productNavigationMap) return;
+// Generate Dynamic Navigation Links
+function generateNavigationLinks() {
+    const navHeader = document.getElementById('nav-products-header');
+    if (!navHeader) return;
 
-    // Map navigation items to product keys
-    const navMapping = {
-        'nav.chemise': 'CHEMISE',
-        'nav.pontalon': 'PONTALON',
-        'nav.chemiseSansManche': 'SANT MANCH',
-        'nav.jupe': 'JUPE',
-        'nav.manteauDroit': 'MANTEAU DROIT',
-        'nav.robeEsabel': 'ROBE ESABEL',
-        'nav.topEsabel': 'TOP ESABEL',
-        'nav.manteau34': 'MANTEAU 3/4',
-        'nav.manteauLong': 'MANTEAU LONG',
-        'nav.vest': 'VEST',
-        'nav.robeLong': 'ROBE LONG'
+    // Clear existing dynamic links (everything between header and admin link)
+    let nextElem = navHeader.nextElementSibling;
+    while (nextElem && !nextElem.classList.contains('admin-link')) {
+        const toRemove = nextElem;
+        nextElem = nextElem.nextElementSibling;
+        toRemove.remove();
+    }
+
+    const products = getProducts();
+    if (!products || Object.keys(products).length === 0) return;
+
+    // Define explicit product order
+    const PRODUCT_ORDER = [
+        'CHEMISE', 'PONTALON', 'SANT MANCH', 'JUPE',
+        'MANTEAU DROIT', 'ROBE ESABEL', 'TOP ESABEL',
+        'MANTEAU 3/4', 'MANTEAU LONG', 'VEST', 'ROBE LONG',
+        'BAG', 'BONNET'
+    ];
+
+    const getOrderedProducts = (products) => {
+        const ordered = [];
+        PRODUCT_ORDER.forEach(key => {
+            if (products[key]) ordered.push([key, products[key]]);
+        });
+        Object.entries(products).forEach(([key, val]) => {
+            if (!PRODUCT_ORDER.includes(key)) ordered.push([key, val]);
+        });
+        return ordered;
     };
 
-    // Update each navigation link
-    Object.entries(navMapping).forEach(([dataI18n, productKey]) => {
-        const navItem = document.querySelector(`[data-i18n="${dataI18n}"]`);
-        if (navItem && window.productNavigationMap[productKey]) {
-            const pageNumber = window.productNavigationMap[productKey];
-            navItem.setAttribute('onclick', `flipToPage(${pageNumber})`);
-            console.log(`Updated ${productKey} navigation to page ${pageNumber}`);
+    // We need to iterate in the same order as generateProductPages
+    getOrderedProducts(products).forEach(([productKey, productData]) => {
+        // Get the page number where this product starts
+        // We use our map. If not found, skip.
+        const pageNumber = window.productNavigationMap[productKey];
+        if (pageNumber !== undefined) {
+            const li = document.createElement('li');
+            li.innerText = productData.displayName || productKey;
+            li.setAttribute('onclick', `flipToPage(${pageNumber})`);
+
+            // Add hover/style classes if needed
+            li.setAttribute('data-product-key', productKey);
+
+            // Insert before the "nextElem" (which is the admin link or subsequent items if we didn't clear correctly, 
+            // but we cleared everything up to admin link, so nextElem is admin link)
+            navHeader.parentNode.insertBefore(li, nextElem);
         }
     });
+
+    console.log("Dynamic navigation links generated.");
+}
+
+// Deprecated: updateNavigationLinks was for static HTML. 
+// We keep an empty version to avoid errors if called elsewhere.
+function updateNavigationLinks() {
+    // No-op
 }

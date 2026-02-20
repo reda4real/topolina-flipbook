@@ -149,7 +149,7 @@ async function uploadImage(file) {
     const token = localStorage.getItem('topolina_admin_session');
 
     try {
-        const response = await fetch('/api/upload', {
+        const response = await fetch('api/upload', {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${token}` },
             body: formData

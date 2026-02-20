@@ -29,6 +29,8 @@
 ```bash
 npm start
 ```
+The application will start on **port 3000** by default (http://localhost:3000).
+
 
 ### Production (using PM2)
 It is recommended to use a process manager like PM2 for production.
